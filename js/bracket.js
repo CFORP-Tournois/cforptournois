@@ -216,12 +216,138 @@
       // Display participants
       displayParticipants(participants);
       
-      // TODO: Fetch and display matches/leaderboard when available
+      // Check if tournament has bracket style and load bracket
+      const tournamentObj = tournaments.find(t => t.tournament_type === tournament);
+      if (tournamentObj && (tournamentObj.bracket_style === 'head-to-head' || tournamentObj.bracket_style === 'mixed')) {
+        await loadAndDisplayBracketTree(tournamentObj);
+      }
       
     } catch (error) {
       console.error('Error loading tournament data:', error);
       showEmpty();
     }
+  }
+  
+  async function loadAndDisplayBracketTree(tournament) {
+    if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
+      return;
+    }
+
+    const supabase = window.supabaseConfig.supabase;
+
+    try {
+      const { data, error } = await supabase
+        .from('bracket_matches')
+        .select(`
+          *,
+          player1:participants!bracket_matches_player1_id_fkey(roblox_username),
+          player2:participants!bracket_matches_player2_id_fkey(roblox_username),
+          winner:participants!bracket_matches_winner_id_fkey(roblox_username)
+        `)
+        .eq('tournament_id', tournament.id)
+        .order('round_number', { ascending: true })
+        .order('match_number', { ascending: true });
+
+      if (error) {
+        console.error('Error loading bracket:', error);
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        console.log('No bracket generated yet for this tournament');
+        return;
+      }
+
+      displayBracketTree(data, tournament);
+    } catch (error) {
+      console.error('Error loading bracket:', error);
+    }
+  }
+  
+  function displayBracketTree(matches, tournament) {
+    // Check if bracket container exists in bracket section
+    let bracketSection = document.getElementById('bracketTreeSection');
+    
+    if (!bracketSection) {
+      // Create bracket section
+      const participantsSection = document.getElementById('participantsSection');
+      bracketSection = document.createElement('div');
+      bracketSection.id = 'bracketTreeSection';
+      bracketSection.style.marginTop = '3rem';
+      participantsSection.parentNode.insertBefore(bracketSection, participantsSection.nextSibling);
+    }
+
+    // Group matches by round
+    const rounds = {};
+    matches.forEach(match => {
+      if (!rounds[match.round_number]) {
+        rounds[match.round_number] = [];
+      }
+      rounds[match.round_number].push(match);
+    });
+
+    const totalRounds = Object.keys(rounds).length;
+
+    let html = `
+      <h2 style="margin-bottom: 1.5rem; text-align: center;" data-i18n="bracket.bracketTitle">Bracket d'élimination</h2>
+      <div class="bracket-container">
+        <div class="bracket">
+    `;
+
+    Object.keys(rounds).sort((a, b) => parseInt(a) - parseInt(b)).forEach(roundNum => {
+      const roundMatches = rounds[roundNum];
+      const roundName = getBracketRoundName(parseInt(roundNum), totalRounds);
+
+      html += `
+        <div class="bracket-round">
+          <div class="bracket-round-title">${roundName}</div>
+      `;
+
+      roundMatches.forEach(match => {
+        html += renderBracketMatch(match);
+      });
+
+      html += `</div>`;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+
+    bracketSection.innerHTML = html;
+  }
+
+  function getBracketRoundName(roundNum, totalRounds) {
+    const remaining = totalRounds - roundNum + 1;
+    
+    if (remaining === 1) return 'Finale / Finals';
+    if (remaining === 2) return 'Demi-finales / Semi-Finals';
+    if (remaining === 3) return 'Quarts de finale / Quarter-Finals';
+    if (remaining === 4) return 'Huitièmes / Round of 16';
+    
+    return `Round ${roundNum}`;
+  }
+
+  function renderBracketMatch(match) {
+    const player1Name = match.player1?.[0]?.roblox_username || 'TBD';
+    const player2Name = match.player2?.[0]?.roblox_username || 'TBD';
+    const winnerName = match.winner?.[0]?.roblox_username;
+
+    const isCompleted = match.match_status === 'completed' || match.winner_id;
+
+    return `
+      <div class="bracket-match ${isCompleted ? 'completed' : ''}">
+        <div class="bracket-player ${winnerName === player1Name ? 'winner' : winnerName ? 'loser' : ''}">
+          ${match.player1_seed ? `<span class="player-seed">${match.player1_seed}</span>` : ''}
+          <span class="player-name">${player1Name}</span>
+        </div>
+        <div class="bracket-player ${winnerName === player2Name ? 'winner' : winnerName ? 'loser' : ''}">
+          ${match.player2_seed ? `<span class="player-seed">${match.player2_seed}</span>` : ''}
+          <span class="player-name">${player2Name}</span>
+        </div>
+      </div>
+    `;
   }
   
   function displayParticipants(participants) {

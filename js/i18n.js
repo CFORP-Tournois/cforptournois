@@ -139,6 +139,7 @@ const translations = {
     // Bracket/Live View
     bracket: {
       title: "Tableaux en direct",
+      bracketTitle: "Bracket d'élimination",
       loading: "Chargement des tableaux...",
       lastUpdated: "Dernière mise à jour",
       liveUpdates: "Mises à jour en direct",
@@ -413,6 +414,7 @@ const translations = {
     // Bracket/Live View
     bracket: {
       title: "Live Brackets",
+      bracketTitle: "Elimination Bracket",
       loading: "Loading brackets...",
       lastUpdated: "Last updated",
       liveUpdates: "Live updates",
