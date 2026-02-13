@@ -157,30 +157,19 @@
     loadTournamentData(tournament);
   }
   
-  function updateTournamentInfo(tournamentType) {
-    const tournament = tournaments.find(t => t.tournament_type === tournamentType);
-    if (!tournament) return;
-    
-    const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
-    const name = currentLang === 'fr' ? tournament.name_fr : tournament.name_en;
-    
-    const nameEl = document.getElementById('tournamentName');
-    if (nameEl) {
-      nameEl.textContent = name;
-    }
-  }
-  
   // Listen for language changes
   window.addEventListener('languageChanged', () => {
     if (tournaments.length > 0) {
       renderTournamentTabs();
       if (currentTournament) {
-        // Re-select current tournament
         const activeTab = document.querySelector(`[data-tournament="${currentTournament}"]`);
         if (activeTab) {
           activeTab.classList.add('active');
         }
-        updateTournamentInfo(currentTournament);
+        updateTournamentInfo(currentParticipants);
+      }
+      if (window.i18n && window.i18n.updateAllText) {
+        window.i18n.updateAllText();
       }
     }
   });
@@ -587,17 +576,31 @@
   }
   
   function updateTournamentInfo(participants) {
-    const tournamentName = document.getElementById('tournamentName');
-    const participantCount = document.getElementById('participantNumber');
+    const tournament = tournaments.find(t => t.tournament_type === currentTournament);
+    const tournamentNameEl = document.getElementById('tournamentName');
+    const participantCountEl = document.getElementById('participantNumber');
+    const statusBadgeEl = document.getElementById('tournamentStatusBadge');
     
-    // Set tournament name based on current tournament
-    if (currentTournament === 'pvp') {
-      tournamentName.textContent = 'RIVALS (13-18)';
-    } else {
-      tournamentName.textContent = window.i18n.t('landing.tournament2Title');
+    if (tournamentNameEl) {
+      if (tournament) {
+        const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
+        tournamentNameEl.textContent = currentLang === 'fr' ? (tournament.name_fr || tournament.name_en) : (tournament.name_en || tournament.name_fr);
+      } else {
+        tournamentNameEl.textContent = currentTournament || '—';
+      }
     }
     
-    participantCount.textContent = participants.length;
+    if (participantCountEl) {
+      participantCountEl.textContent = participants ? participants.length : 0;
+    }
+    
+    if (statusBadgeEl && tournament && window.i18n && window.i18n.t) {
+      const status = tournament.status || 'published';
+      const key = status === 'completed' ? 'bracket.statusCompleted'
+        : status === 'in-progress' ? 'bracket.statusInProgress'
+        : 'bracket.statusRegistration';
+      statusBadgeEl.textContent = window.i18n.t(key);
+    }
   }
 
   // ============================================

@@ -229,6 +229,7 @@ const translations = {
     results: {
       title: "Résultats du tournoi",
       finalStandings: "Classement final",
+      fullStandings: "Classement complet",
       
       // No Results State
       upcomingTitle: "Tournoi en cours ou à venir",
@@ -518,6 +519,7 @@ const translations = {
     results: {
       title: "Tournament Results",
       finalStandings: "Final Standings",
+      fullStandings: "Full Standings",
       
       // No Results State
       upcomingTitle: "Tournament in progress or upcoming",

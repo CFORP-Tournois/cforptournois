@@ -644,6 +644,14 @@ a:focus-visible {
   color: var(--cf-blue-primary);
 }
 
+/* High contrast on dark background (e.g. bracket tournament card) */
+.badge-tournament-status {
+  background: rgba(255, 255, 255, 0.95);
+  color: #1b4d3a;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+}
+
 .badge-pink {
   background: rgba(230, 0, 126, 0.1);
   color: var(--cf-pink);
