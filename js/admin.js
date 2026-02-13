@@ -989,34 +989,48 @@
       updated_at: new Date().toISOString()
     };
     
+    console.log('💾 Saving tournament with data:', tournamentData);
+    console.log('📋 Bracket Style being saved:', tournamentData.bracket_style);
+    
     try {
       let result;
       
       if (tournamentId) {
         // Update existing tournament
+        console.log('🔄 Updating tournament ID:', tournamentId);
         result = await supabase
           .from('tournaments')
           .update(tournamentData)
-          .eq('id', tournamentId);
+          .eq('id', tournamentId)
+          .select(); // Add .select() to return updated data
       } else {
         // Create new tournament
+        console.log('✨ Creating new tournament');
         result = await supabase
           .from('tournaments')
-          .insert(tournamentData);
+          .insert(tournamentData)
+          .select(); // Add .select() to return created data
       }
       
+      console.log('📊 Database response:', result);
+      
       if (result.error) {
-        console.error('Error saving tournament:', result.error);
+        console.error('❌ Error saving tournament:', result.error);
         alert('Error saving tournament: ' + result.error.message);
         return;
+      }
+      
+      if (result.data && result.data.length > 0) {
+        console.log('✅ Tournament saved successfully:', result.data[0]);
+        console.log('✅ Bracket style in database:', result.data[0].bracket_style);
       }
       
       alert(tournamentId ? 'Tournament updated successfully!' : 'Tournament created successfully!');
       closeTournamentModal();
       loadTournaments();
     } catch (error) {
-      console.error('Error:', error);
-      alert('Error saving tournament');
+      console.error('❌ Error:', error);
+      alert('Error saving tournament: ' + error.message);
     }
   }
   

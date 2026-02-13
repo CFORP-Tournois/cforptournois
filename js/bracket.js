@@ -55,10 +55,14 @@
       
       tournaments = data || [];
       
+      console.log('🏆 Loaded tournaments:', tournaments);
+      
       if (tournaments.length > 0) {
         renderTournamentTabs();
         // Set first tournament as current
         currentTournament = tournaments[0].tournament_type;
+        console.log('🎯 Setting current tournament to:', currentTournament);
+        console.log('📋 Tournament details:', tournaments[0]);
         switchTournament(currentTournament);
       } else {
         showNoTournaments();
@@ -196,6 +200,7 @@
       const TABLES = window.supabaseConfig.TABLES;
       
       // Fetch participants for this tournament
+      console.log('👥 Fetching participants for tournament_type:', tournament);
       const { data: participants, error } = await supabase
         .from(TABLES.PARTICIPANTS)
         .select('*')
@@ -203,12 +208,15 @@
         .order('signup_timestamp', { ascending: true });
       
       if (error) {
-        console.error('Error fetching participants:', error);
+        console.error('❌ Error fetching participants:', error);
         showEmpty();
         return;
       }
       
+      console.log('✅ Found participants:', participants ? participants.length : 0, participants);
+      
       if (!participants || participants.length === 0) {
+        console.warn('⚠️ No participants found for tournament_type:', tournament);
         showEmpty();
         return;
       }
