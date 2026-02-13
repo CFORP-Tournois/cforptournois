@@ -33,7 +33,7 @@
       const { data, error } = await supabase
         .from('tournaments')
         .select('*')
-        .in('status', ['published', 'in-progress'])
+        .in('status', ['published', 'in-progress', 'completed'])
         .order('display_order', { ascending: true });
       
       if (error) {
@@ -143,7 +143,11 @@
           </div>
         </div>
         
-        ${tournament.status === 'in-progress' ? `
+        ${tournament.status === 'completed' ? `
+          <a href="results.html?tournament=${encodeURIComponent(tournament.tournament_type)}" class="btn" style="width: 100%; margin-top: 1rem; background: linear-gradient(135deg, #8DC63F 0%, #7ab62f 100%); color: white;">
+            ✓ <span data-i18n="landing.tournamentCompleted">Tournoi terminé</span> - <span data-i18n="landing.viewResults">Voir les résultats</span>
+          </a>
+        ` : tournament.status === 'in-progress' ? `
           <div style="margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #E6007E 0%, #c4005f 100%); border-radius: 8px; text-align: center;">
             <p style="color: white; font-weight: 700; font-size: 1.125rem; margin: 0;">
               🏆 <span data-i18n="landing.tournamentInProgress">Tournoi en cours</span>

@@ -208,7 +208,7 @@
         const { data, error } = await supabase
           .from('tournaments')
           .select('*')
-          .in('status', ['published', 'in-progress'])
+          .in('status', ['published', 'in-progress', 'completed'])  // Show completed tournaments in results
           .order('display_order', { ascending: true });
         
         if (error) {

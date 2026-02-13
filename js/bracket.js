@@ -42,10 +42,10 @@
     const supabase = window.supabaseConfig.supabase;
     
     try {
-      const { data, error } = await supabase
+      const { data, error} = await supabase
         .from('tournaments')
         .select('*')
-        .in('status', ['published', 'in-progress'])
+        .in('status', ['published', 'in-progress'])  // Don't show completed tournaments in bracket view
         .order('display_order', { ascending: true });
       
       if (error) {

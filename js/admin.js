@@ -661,6 +661,7 @@
     document.getElementById('formatEn').value = tournament.format_en || '';
     document.getElementById('gamePlatform').value = tournament.game_platform || 'Roblox';
     document.getElementById('tournamentType').value = tournament.tournament_type || 'pvp';
+    document.getElementById('bracketStyle').value = tournament.bracket_style || 'scoreboard';
     document.getElementById('tournamentStatus').value = tournament.status || 'draft';
     document.getElementById('tournamentTime').value = tournament.tournament_time || '';
     document.getElementById('maxParticipants').value = tournament.max_participants || '';
@@ -704,6 +705,7 @@
       format_en: document.getElementById('formatEn').value || null,
       game_platform: document.getElementById('gamePlatform').value,
       tournament_type: document.getElementById('tournamentType').value,
+      bracket_style: document.getElementById('bracketStyle').value,
       status: document.getElementById('tournamentStatus').value,
       tournament_date: document.getElementById('tournamentDate').value ? new Date(document.getElementById('tournamentDate').value).toISOString() : null,
       tournament_time: document.getElementById('tournamentTime').value || null,

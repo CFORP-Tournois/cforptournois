@@ -312,6 +312,16 @@
                     </div>
 
                     <div class="form-group">
+                      <label class="form-label form-label-required">Bracket Style</label>
+                      <select id="bracketStyle" class="form-select" required>
+                        <option value="scoreboard">Scoreboard (Points/Leaderboard)</option>
+                        <option value="head-to-head">Head-to-Head (Elimination Bracket)</option>
+                        <option value="mixed">Mixed (FFA + Bracket)</option>
+                      </select>
+                      <p class="form-help">Choose how results are displayed: scoreboard for racing/points, H2H for 1v1 elimination, mixed for FFA rounds then bracket</p>
+                    </div>
+
+                    <div class="form-group">
                       <label class="form-label form-label-required">Tournament Date</label>
                       <input type="datetime-local" id="tournamentDate" class="form-input" required>
                     </div>
