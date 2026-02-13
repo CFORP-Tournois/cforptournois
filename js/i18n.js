@@ -244,6 +244,8 @@ const translations = {
       thirdPlace: "3e place",
       congratulations: "Félicitations!",
       winner: "Vainqueur",
+      statusMadeElimination: "Élimination",
+      statusDidNotMakeElimination: "Hors élimination",
       
       // Stats
       statsTitle: "Statistiques du tournoi",
@@ -538,6 +540,8 @@ const translations = {
       thirdPlace: "3rd Place",
       congratulations: "Congratulations!",
       winner: "Winner",
+      statusMadeElimination: "Made elimination",
+      statusDidNotMakeElimination: "Did not make elimination",
       
       // Stats
       statsTitle: "Tournament Statistics",
