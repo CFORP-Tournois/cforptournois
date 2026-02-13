@@ -315,17 +315,8 @@
   }
   
   function displayBracketTree(matches, tournament) {
-    // Check if bracket container exists in bracket section
-    let bracketSection = document.getElementById('bracketTreeSection');
-    
-    if (!bracketSection) {
-      // Create bracket section
-      const participantsSection = document.getElementById('participantsSection');
-      bracketSection = document.createElement('div');
-      bracketSection.id = 'bracketTreeSection';
-      bracketSection.style.marginTop = '3rem';
-      participantsSection.parentNode.insertBefore(bracketSection, participantsSection.nextSibling);
-    }
+    const bracketSection = document.getElementById('bracketTreeSection');
+    if (!bracketSection) return;
 
     // Group matches by round
     const rounds = {};
