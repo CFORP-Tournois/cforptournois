@@ -29,29 +29,29 @@ This will:
 - ✅ Restrict tournament modifications to admin only
 - ✅ Allow public signups with strict validation
 
-### Step 2: Configure Domain Whitelist (CRITICAL!)
+### Step 2: Domain/CORS Settings (Optional - Not Available on Free Tier)
 
-**This is the most important step!**
+**UPDATE: Supabase free tier doesn't offer CORS domain whitelisting.**
 
-1. Go to Supabase Dashboard → **Settings** → **API**
-2. Scroll to **"Allowed Domains"** or **"CORS Settings"**
-3. Remove `*` (wildcard) if present
-4. Add ONLY your GitHub Pages URL:
-   ```
-   https://yourusername.github.io
-   ```
-   Or your custom domain if you have one.
+What you might see in dashboard:
+- **IP Restrictions**: DON'T use this - blocks specific IPs (not useful for public sites)
+- **Authentication URLs**: Only affects auth callbacks, not API requests
 
-**What this does:** Prevents anyone from using your API keys on their own website or scripts.
+**Why you DON'T need CORS whitelisting:**
+- ✅ RLS policies are your REAL security (database-level)
+- ✅ Anon key being public is expected and safe
+- ✅ RLS validates ALL requests regardless of origin
+- ❌ CORS would just be an extra layer (nice-to-have, not critical)
 
-### Step 3: Enable Rate Limiting
+**Skip this step** - your security comes from RLS (Step 1).
 
-1. Go to Supabase Dashboard → **Settings** → **API**
-2. Find **"Rate Limiting"** section
-3. Set to: **10 requests per second** (free tier default)
-4. Consider lowering to **5 requests per second** for extra protection
+### Step 3: Rate Limiting (Automatic on Free Tier)
 
-**What this does:** Prevents rapid-fire spam from single IP addresses.
+Supabase automatically applies rate limiting on free tier:
+- Default: ~100 requests per minute per IP
+- This is usually sufficient for tournament signups
+
+**You don't need to configure anything** - it's built-in and automatic.
 
 ### Step 4: Monitor Your Database
 
@@ -104,8 +104,8 @@ For even better security, you can use a **Service Role Key** for admin operation
 | Threat | Protection | Status |
 |--------|-----------|--------|
 | Bot spam | Honeypot field | ✅ Active |
-| API abuse from other sites | Domain whitelist | ⚠️ Configure in dashboard |
-| Rapid-fire spam | Rate limiting | ⚠️ Configure in dashboard |
+| API abuse from other sites | RLS policies | ✅ Active |
+| Rapid-fire spam | Rate limiting (automatic) | ✅ Active |
 | Invalid usernames | Input validation | ✅ Active |
 | Duplicate signups | Duplicate check | ✅ Active |
 | Direct database tampering | RLS policies | ✅ Active |
@@ -117,14 +117,14 @@ For even better security, you can use a **Service Role Key** for admin operation
 
 Before going live, ensure:
 
-- [ ] Ran `SECURITY_SETUP.sql` in Supabase
-- [ ] Added domain whitelist (GitHub Pages URL only)
-- [ ] Enabled rate limiting (10 req/sec or lower)
+- [ ] Ran `SECURITY_SETUP.sql` in Supabase ⭐ **MOST IMPORTANT**
 - [ ] Tested signup form works correctly
-- [ ] Verified honeypot catches bots
+- [ ] Verified honeypot catches bots (check console for "🤖 Bot detected")
 - [ ] Confirmed admin panel can manage tournaments
-- [ ] Checked RLS policies are active (Settings → Database → Tables)
+- [ ] Checked RLS policies are active (Settings → Database → Tables → participants)
 - [ ] Never committed service role key to GitHub
+- [ ] ~~Domain whitelist~~ (not available on free tier - RLS is your security)
+- [ ] ~~Rate limiting config~~ (automatic on free tier)
 
 ---
 
@@ -206,13 +206,19 @@ Your **anonymous (anon) key** is currently:
 ## 📝 Summary
 
 **Before Deployment:**
-1. ✅ Run `SECURITY_SETUP.sql`
-2. ✅ Configure domain whitelist in Supabase
-3. ✅ Enable rate limiting
+1. ⭐ **Run `SECURITY_SETUP.sql`** (This is 90% of your security!)
+2. ✅ Test that signups work
+3. ✅ Verify honeypot field is hidden in signup form
 
 **After Deployment:**
 1. Monitor signups for suspicious activity
 2. Check honeypot is working (console logs "🤖 Bot detected")
 3. Regularly review database for spam
 
-**Your database is now MUCH more secure!** 🎉
+**Your database is now protected by RLS policies!** 🎉
+
+**Remember:** 
+- ✅ Anon key being public is FINE (it's designed that way)
+- ✅ RLS policies are your real security layer
+- ❌ IP restrictions are NOT for public websites
+- ❌ CORS whitelisting isn't available (and not needed with RLS)

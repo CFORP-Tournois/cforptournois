@@ -4,8 +4,10 @@
 (function() {
   'use strict';
 
-  // ADMIN PASSWORD - Change this to something secure!
-  const ADMIN_PASSWORD_HASH = 'tournament2026'; // TODO: Use proper hashing in production
+  // ADMIN PASSWORD - ⚠️ CHANGE THIS IMMEDIATELY! ⚠️
+  // This password is visible in your public GitHub repo!
+  // After changing, commit the change and push to GitHub
+  const ADMIN_PASSWORD = 'tournament2026-CHANGE-ME'; // TODO: Use proper hashing in production
   
   // Point values for placements (customize as needed)
   const POINT_SCALE = {
@@ -27,15 +29,18 @@
   document.addEventListener('DOMContentLoaded', init);
 
   function init() {
-    // Check if already logged in
+    // Set up login form
+    const loginForm = document.getElementById('loginForm');
+    if (loginForm) {
+      loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    // Check if already logged in via sessionStorage
     const savedAuth = sessionStorage.getItem('adminAuth');
     if (savedAuth === 'true') {
       isAuthenticated = true;
       showAdminInterface();
     }
-    
-    // Set up login form
-    document.getElementById('loginForm').addEventListener('submit', handleLogin);
   }
 
   // ============================================
@@ -49,10 +54,11 @@
     const errorDiv = document.getElementById('loginError');
     
     // Simple password check (use proper authentication in production!)
-    if (password === ADMIN_PASSWORD_HASH) {
+    if (password === ADMIN_PASSWORD) {
       isAuthenticated = true;
       sessionStorage.setItem('adminAuth', 'true');
       showAdminInterface();
+      errorDiv.classList.add('hidden');
     } else {
       errorDiv.textContent = '⚠️ Incorrect password';
       errorDiv.classList.remove('hidden');
