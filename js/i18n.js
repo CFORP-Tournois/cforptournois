@@ -6,7 +6,7 @@ const translations = {
     // Header & Navigation
     header: {
       title: "Tournois et compétitions",
-      subtitle: "AFNOO",
+      subtitle: "Association des francophones du Nord-Ouest de l'Ontario",
       home: "Accueil",
       register: "S'inscrire",
       brackets: "Tableaux",
@@ -79,12 +79,13 @@ const translations = {
       faq4A: "Veuillez nous informer avant le tournoi si possible. Les absents seront disqualifiés après 5 minutes.",
       
       // Footer
-      footerOrg: "Organisé par l'AFNOO",
+      footerOrg: "Organisé par l'Association des francophones du Nord-Ouest de l'Ontario (AFNOO)",
       footerContact: "Contact",
       footerPrivacy: "Politique de confidentialité",
       footerAccessibility: "Accessibilité",
       footerCompliance: "Ce site est conforme aux Règles pour l'accessibilité des contenus Web (WCAG) 2.0.",
-      footerCopyright: "© AFNOO, 2026 – Tous droits réservés."
+      footerCopyright: "© AFNOO, 2026 – Tous droits réservés.",
+      footerFunding: "Financé par le gouvernement de l'Ontario"
     },
 
     // Signup Form
@@ -290,7 +291,7 @@ const translations = {
     // Header & Navigation
     header: {
       title: "Tournaments & Competitions",
-      subtitle: "AFNOO",
+      subtitle: "Association des francophones du Nord-Ouest de l'Ontario",
       home: "Home",
       register: "Register",
       brackets: "Brackets",
@@ -363,12 +364,13 @@ const translations = {
       faq4A: "Please let us know before the tournament if possible. No-shows will be disqualified after 5 minutes.",
       
       // Footer
-      footerOrg: "Organized by AFNOO",
+      footerOrg: "Organized by the Association des francophones du Nord-Ouest de l'Ontario (AFNOO)",
       footerContact: "Contact",
       footerPrivacy: "Privacy Policy",
       footerAccessibility: "Accessibility",
       footerCompliance: "This site is compliant with Web Content Accessibility Guidelines (WCAG) 2.0.",
-      footerCopyright: "© AFNOO, 2026 – All rights reserved."
+      footerCopyright: "© AFNOO, 2026 – All rights reserved.",
+      footerFunding: "Funded by the Government of Ontario"
     },
 
     // Signup Form

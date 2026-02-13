@@ -201,6 +201,18 @@ a:focus-visible {
   text-decoration: none;
 }
 
+/* Nav + language toggle grouped on the right */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  margin-left: auto;
+}
+
+.header-lang-wrap {
+  flex-shrink: 0;
+}
+
 /* Language Toggle Button */
 .lang-toggle {
   background: var(--cf-pink);
@@ -655,10 +667,41 @@ a:focus-visible {
 }
 
 .footer-logo {
-  max-width: 250px;
+  max-width: 220px;
   height: auto;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
   background: transparent;
+}
+
+.footer-org {
+  margin: 0 0 var(--spacing-lg);
+  font-size: 1rem;
+  opacity: 0.95;
+}
+
+.footer-funding {
+  margin-top: var(--spacing-2xl);
+  padding-top: var(--spacing-xl);
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.footer-funding-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  opacity: 0.7;
+  margin: 0;
+}
+
+.footer-funding-logo {
+  height: 68px;
+  width: auto;
+  object-fit: contain;
+  opacity: 0.85;
 }
 
 .footer-links {
@@ -753,6 +796,15 @@ a:focus-visible {
    RESPONSIVE DESIGN
    ============================================ */
 @media (max-width: 768px) {
+  .header {
+    padding: var(--spacing-sm) 0;
+  }
+  
+  .header-container {
+    padding: 0 var(--spacing-md);
+    gap: var(--spacing-sm);
+  }
+  
   .nav-menu {
     gap: var(--spacing-sm);
   }
@@ -760,6 +812,10 @@ a:focus-visible {
   .nav-link {
     padding: var(--spacing-sm);
     font-size: 0.875rem;
+  }
+  
+  .logo-container {
+    gap: var(--spacing-sm);
   }
   
   .logo-img {
@@ -772,6 +828,10 @@ a:focus-visible {
   
   .logo-subtitle {
     font-size: 0.65rem;
+  }
+  
+  .header-right {
+    gap: var(--spacing-sm);
   }
   
   .tournament-grid {
@@ -792,14 +852,59 @@ a:focus-visible {
 }
 
 @media (max-width: 480px) {
+  .header {
+    padding: var(--spacing-xs) 0 var(--spacing-sm);
+  }
+  
   .header-container {
-    flex-direction: column;
-    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    gap: var(--spacing-sm);
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .logo-container {
+    gap: var(--spacing-xs);
+  }
+  
+  .logo-img {
+    height: 36px;
+  }
+  
+  .logo-title {
+    font-size: 0.9375rem;
+  }
+  
+  .logo-subtitle {
+    font-size: 0.6rem;
+    line-height: 1.2;
+  }
+  
+  .header-right {
+    width: 100%;
+    margin-left: 0;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid rgba(0, 0, 0, 0.06);
   }
   
   .nav-menu {
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
+    gap: var(--spacing-xs);
+  }
+  
+  .nav-link {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    font-size: 0.8125rem;
+  }
+  
+  .lang-toggle {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 0.8125rem;
+    padding: var(--spacing-xs) var(--spacing-sm);
   }
 }
 

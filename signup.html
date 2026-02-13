@@ -38,17 +38,19 @@
       </a>
       
       <!-- Navigation -->
-      <nav role="navigation" aria-label="Navigation principale">
-        <ul class="nav-menu">
-          <li><a href="index.html" class="nav-link" data-i18n="header.home">Accueil</a></li>
-          <li><a href="signup.html" class="nav-link" data-i18n="header.register">S'inscrire</a></li>
-          <li><a href="bracket.html" class="nav-link" data-i18n="header.brackets">Tableaux</a></li>
-          <li><a href="results.html" class="nav-link" data-i18n="header.results">Résultats</a></li>
-          <li>
-            <button id="langToggle" class="lang-toggle" aria-label="Changer la langue">EN</button>
-          </li>
-        </ul>
-      </nav>
+      <div class="header-right">
+        <nav role="navigation" aria-label="Navigation principale">
+          <ul class="nav-menu">
+            <li><a href="index.html" class="nav-link" data-i18n="header.home">Accueil</a></li>
+            <li><a href="signup.html" class="nav-link" data-i18n="header.register">S'inscrire</a></li>
+            <li><a href="bracket.html" class="nav-link" data-i18n="header.brackets">Tableaux</a></li>
+            <li><a href="results.html" class="nav-link" data-i18n="header.results">Résultats</a></li>
+          </ul>
+        </nav>
+        <div class="header-lang-wrap">
+          <button id="langToggle" class="lang-toggle" aria-label="Changer la langue">EN</button>
+        </div>
+      </div>
     </div>
   </header>
 
@@ -215,9 +217,8 @@
   <!-- FOOTER -->
   <footer class="footer" role="contentinfo">
     <div class="footer-content">
-      <img src="assets/images/logo-full.png" alt="AFNOO" class="footer-logo">
-      
-      <p style="margin: 1rem 0;" data-i18n="landing.footerOrg">Organisé par AFNOO</p>
+      <img src="assets/images/logo-only.png" alt="AFNOO" class="footer-logo">
+      <p class="footer-org" data-i18n="landing.footerOrg">Organisé par AFNOO</p>
       
       <nav aria-label="Navigation du pied de page">
         <div class="footer-links">
@@ -234,6 +235,11 @@
       <p class="footer-copyright" data-i18n="landing.footerCopyright">
         © AFNOO, 2026 – Tous droits réservés.
       </p>
+      
+      <div class="footer-funding">
+        <p class="footer-funding-label" data-i18n="landing.footerFunding">Financé par le gouvernement de l'Ontario</p>
+        <img src="assets/images/Ontario-full.png" alt="Gouvernement de l'Ontario" class="footer-funding-logo">
+      </div>
     </div>
   </footer>
 
