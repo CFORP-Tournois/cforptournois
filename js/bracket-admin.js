@@ -263,27 +263,32 @@
   }
 
   async function generateBracket() {
-    const bracketSize = parseInt(document.getElementById('bracketSize').value);
     const seedingMethod = document.getElementById('seedingMethod').value;
+    const participantCount = participants.length;
 
-    if (participants.length < bracketSize) {
-      alert(`Not enough participants! You need ${bracketSize} participants but only have ${participants.length}.`);
+    if (participantCount < 2) {
+      alert('Need at least 2 participants to generate a bracket!');
       return;
     }
 
-    if (!confirm(`Generate ${bracketSize}-player bracket for ${currentTournament.name_en}?`)) {
+    // Calculate bracket size (next power of 2)
+    const bracketSize = Math.pow(2, Math.ceil(Math.log2(participantCount)));
+    const byesNeeded = bracketSize - participantCount;
+
+    if (!confirm(`Generate bracket for ${participantCount} participants?\n\n` +
+      `Bracket size: ${bracketSize} (${byesNeeded} bye${byesNeeded === 1 ? '' : 's'})`)) {
       return;
     }
 
     // Get seeded participants
-    let seededParticipants = await getSeededParticipants(bracketSize, seedingMethod);
+    let seededParticipants = await getSeededParticipants(participantCount, seedingMethod);
 
-    if (!seededParticipants || seededParticipants.length !== bracketSize) {
+    if (!seededParticipants || seededParticipants.length !== participantCount) {
       alert('Error generating bracket: Could not seed participants');
       return;
     }
 
-    // Generate bracket structure
+    // Generate bracket structure with byes
     const matches = createBracketStructure(seededParticipants, bracketSize);
 
     // Save to database
@@ -293,7 +298,7 @@
     await checkBracketExists();
     await loadAndDisplayBracket();
 
-    alert('✓ Bracket generated successfully!');
+    alert(`✓ Bracket generated successfully!\n${participantCount} participants, ${byesNeeded} bye rounds`);
   }
 
   async function getSeededParticipants(bracketSize, method) {
@@ -383,24 +388,42 @@
     const matches = [];
     const rounds = Math.log2(bracketSize);
 
-    // Round 1: Pair up seeded players
+    // Pad seededParticipants with nulls for bye rounds
+    const paddedParticipants = [...seededParticipants];
+    while (paddedParticipants.length < bracketSize) {
+      paddedParticipants.push(null);
+    }
+
+    // Round 1: Pair up seeded players (including byes)
     const round1Matches = bracketSize / 2;
     const pairings = createSeedPairings(bracketSize);
 
     for (let i = 0; i < round1Matches; i++) {
       const pairing = pairings[i];
-      const player1 = seededParticipants[pairing[0] - 1];
-      const player2 = seededParticipants[pairing[1] - 1];
+      const player1 = paddedParticipants[pairing[0] - 1];
+      const player2 = paddedParticipants[pairing[1] - 1];
+
+      // If one player is null (bye), automatically advance the other
+      let matchStatus = 'pending';
+      let winnerId = null;
+      
+      if (!player1 && player2) {
+        matchStatus = 'completed';
+        winnerId = player2.id;
+      } else if (player1 && !player2) {
+        matchStatus = 'completed';
+        winnerId = player1.id;
+      }
 
       matches.push({
         round_number: 1,
         match_number: i + 1,
-        player1_id: player1.id,
-        player2_id: player2.id,
-        player1_seed: player1.seed,
-        player2_seed: player2.seed,
-        winner_id: null,
-        match_status: 'pending'
+        player1_id: player1 ? player1.id : null,
+        player2_id: player2 ? player2.id : null,
+        player1_seed: player1 ? player1.seed : null,
+        player2_seed: player2 ? player2.seed : null,
+        winner_id: winnerId,
+        match_status: matchStatus
       });
     }
 

@@ -278,11 +278,12 @@
     const supabase = window.supabaseConfig.supabase;
     const TABLES = window.supabaseConfig.TABLES;
     
-    // Check for duplicate registration using tournament_id
-    const { data: existing, error: checkError } = await supabase
+    // Normalize username (case-insensitive check)
+    // Check for duplicate registration using tournament_id with case-insensitive username
+    const { data: existing, error: checkError} = await supabase
       .from(TABLES.PARTICIPANTS)
       .select('*')
-      .eq('roblox_username', formData.robloxUsername)
+      .ilike('roblox_username', formData.robloxUsername) // Case-insensitive
       .eq('tournament_id', formData.tournamentId);
     
     if (checkError) {
