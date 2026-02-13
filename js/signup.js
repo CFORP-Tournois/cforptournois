@@ -7,7 +7,10 @@
   // Wait for DOM to be ready
   document.addEventListener('DOMContentLoaded', initSignupForm);
 
-  function initSignupForm() {
+  async function initSignupForm() {
+    // Load tournaments first
+    await loadTournaments();
+    
     const form = document.getElementById('signupForm');
     const usernameInput = document.getElementById('robloxUsername');
     
@@ -20,6 +23,104 @@
     
     // Form submission
     form.addEventListener('submit', handleSubmit);
+    
+    // Pre-select tournament based on URL parameter
+    preselectTournament();
+    
+    // Listen for language changes
+    window.addEventListener('languageChanged', loadTournaments);
+  }
+  
+  // ============================================
+  // LOAD TOURNAMENTS FROM DATABASE
+  // ============================================
+  
+  async function loadTournaments() {
+    const container = document.getElementById('tournamentOptionsContainer');
+    if (!container) return;
+    
+    if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
+      console.warn('Supabase not configured');
+      container.innerHTML = '<div style="color: #E63946; padding: 1rem;">Unable to load tournaments. Please refresh the page.</div>';
+      return;
+    }
+    
+    const supabase = window.supabaseConfig.supabase;
+    
+    try {
+      const { data: tournaments, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .eq('status', 'published')
+        .order('display_order', { ascending: true });
+      
+      if (error) {
+        console.error('Error loading tournaments:', error);
+        container.innerHTML = '<div style="color: #E63946; padding: 1rem;">Error loading tournaments</div>';
+        return;
+      }
+      
+      if (!tournaments || tournaments.length === 0) {
+        container.innerHTML = '<div style="color: #666; padding: 1rem;">No tournaments available at the moment.</div>';
+        return;
+      }
+      
+      const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
+      
+      container.innerHTML = tournaments.map((tournament, index) => {
+        const name = currentLang === 'fr' ? tournament.name_fr : tournament.name_en;
+        const subtitle = currentLang === 'fr' ? tournament.subtitle_fr : tournament.subtitle_en;
+        const format = currentLang === 'fr' ? tournament.format_fr : tournament.format_en;
+        
+        return `
+          <div class="form-radio">
+            <input 
+              type="radio" 
+              id="tournament-${tournament.id}" 
+              name="tournament" 
+              value="${escapeHtml(tournament.tournament_type)}"
+              data-tournament-id="${tournament.id}"
+              required
+            >
+            <label for="tournament-${tournament.id}" class="form-radio-label">
+              <strong>${escapeHtml(name)}</strong>${subtitle ? ` - <span>${escapeHtml(subtitle)}</span>` : ''}
+              <br>
+              <small style="color: #666;">
+                📱 ${escapeHtml(tournament.game_platform || 'Roblox')}${format ? ` • ${escapeHtml(format)}` : ''}
+              </small>
+            </label>
+          </div>
+        `;
+      }).join('');
+      
+      // Re-select tournament from URL if it was previously selected
+      preselectTournament();
+    } catch (error) {
+      console.error('Error:', error);
+      container.innerHTML = '<div style="color: #E63946; padding: 1rem;">Error loading tournaments</div>';
+    }
+  }
+  
+  function preselectTournament() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tournamentType = urlParams.get('tournament');
+    
+    if (tournamentType) {
+      const radio = document.querySelector(`input[name="tournament"][value="${tournamentType}"]`);
+      if (radio) {
+        radio.checked = true;
+      }
+    }
+  }
+  
+  function escapeHtml(unsafe) {
+    if (!unsafe) return '';
+    return String(unsafe)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
   }
 
   // ============================================
@@ -64,12 +165,28 @@
     const submitBtn = document.getElementById('submitBtn');
     const loadingState = document.getElementById('loadingState');
     
+    // HONEYPOT CHECK - if filled, silently reject (bots fill hidden fields)
+    const honeypot = document.getElementById('website').value;
+    if (honeypot && honeypot.trim() !== '') {
+      // Bot detected! Show fake success to confuse the bot
+      console.warn('🤖 Bot detected via honeypot');
+      setTimeout(() => {
+        showSuccessPage({
+          id: 'BOT-DETECTED',
+          username: 'Bot',
+          tournament: 'none'
+        });
+      }, 2000);
+      return;
+    }
+    
     // Get form data
     const formData = {
       robloxUsername: document.getElementById('robloxUsername').value.trim(),
       tournament: document.querySelector('input[name="tournament"]:checked')?.value,
       ageConfirm: document.getElementById('ageConfirm').checked,
-      rulesAccept: document.getElementById('rulesAccept').checked
+      rulesAccept: document.getElementById('rulesAccept').checked,
+      honeypot: honeypot // Include for database-level check too
     };
     
     // Validate all fields
@@ -179,7 +296,8 @@
       .from(TABLES.PARTICIPANTS)
       .insert({
         roblox_username: formData.robloxUsername,
-        tournament_type: formData.tournament
+        tournament_type: formData.tournament,
+        honeypot: null // Always null for real users (bots would fill this)
       })
       .select()
       .single();

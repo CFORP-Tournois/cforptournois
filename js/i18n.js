@@ -53,6 +53,8 @@ const translations = {
       hours: "heures",
       minutes: "minutes",
       seconds: "secondes",
+      noTournaments: "Aucun tournoi disponible",
+      checkBackSoon: "Revenez bientôt pour les prochains tournois!",
       
       // Rules Section
       rulesTitle: "Règlement",
@@ -321,6 +323,8 @@ const translations = {
       hours: "hours",
       minutes: "minutes",
       seconds: "seconds",
+      noTournaments: "No tournaments available",
+      checkBackSoon: "Check back soon for upcoming tournaments!",
       
       // Rules Section
       rulesTitle: "Rules",

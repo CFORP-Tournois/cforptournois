@@ -89,48 +89,29 @@
             <div id="usernameSuccess" class="form-success hidden"></div>
           </div>
 
+          <!-- Honeypot field (hidden from humans, visible to bots) -->
+          <div class="form-group" style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
+            <label for="website">Website (leave blank)</label>
+            <input 
+              type="text" 
+              id="website" 
+              name="website" 
+              tabindex="-1"
+              autocomplete="off"
+            >
+          </div>
+
           <!-- Tournament Selection -->
           <div class="form-group">
             <label class="form-label form-label-required" data-i18n="signup.tournamentLabel">
               Sélectionnez un tournoi
             </label>
             
-            <div class="form-radio">
-              <input 
-                type="radio" 
-                id="tournament-pvp" 
-                name="tournament" 
-                value="pvp"
-                required
-              >
-              <label for="tournament-pvp" class="form-radio-label">
-                <strong data-i18n="landing.tournament1Title">RIVALS</strong> - 
-                <span data-i18n="landing.tournament1Subtitle">13-18 ans</span>
-                <br>
-                <small style="color: #666;">
-                  📱 Roblox • 
-                  <span data-i18n="landing.tournament1Format">FFA / Élimination</span>
-                </small>
-              </label>
-            </div>
-
-            <div class="form-radio">
-              <input 
-                type="radio" 
-                id="tournament-racing" 
-                name="tournament" 
-                value="all-ages"
-                required
-              >
-              <label for="tournament-racing" class="form-radio-label">
-                <strong><span data-i18n="landing.tournament2Title">Tournoi 2: Course de voitures</span></strong> - 
-                <span data-i18n="landing.tournament2Subtitle">Tous âges</span>
-                <br>
-                <small style="color: #666;">
-                  📱 Roblox • 
-                  <span data-i18n="landing.tournament2Format">Chronométré / Points</span>
-                </small>
-              </label>
+            <div id="tournamentOptionsContainer">
+              <!-- Tournament radio buttons will be loaded dynamically -->
+              <div style="text-align: center; padding: 1rem; color: #666;">
+                <span data-i18n="common.loading">Chargement...</span>
+              </div>
             </div>
 
             <div id="tournamentError" class="form-error hidden"></div>

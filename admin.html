@@ -207,13 +207,150 @@
             <button class="btn btn-primary" id="createTournamentBtn">➕ Create New Tournament</button>
           </div>
 
-          <div id="tournamentsList">
-            <!-- Tournament management cards will be inserted here -->
-            <div style="text-align: center; padding: 3rem; background: #f5f5f5; border-radius: 12px;">
-              <p style="color: #666;">Dynamic tournament management coming in next update!</p>
-              <p style="color: #666; font-size: 0.875rem; margin-top: 0.5rem;">For now, tournaments are hardcoded in index.html</p>
+          <!-- Tournaments Table -->
+          <div class="table-container">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Name (FR/EN)</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Type</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tournamentsTableBody">
+                <tr>
+                  <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
+                    Loading tournaments...
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Tournament Form Modal -->
+          <div id="tournamentFormModal" class="modal hidden">
+            <div class="modal-content" style="max-width: 800px;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                <h2 id="tournamentFormTitle">Create New Tournament</h2>
+                <button class="btn btn-outline" id="closeTournamentModal" style="padding: 0.5rem 1rem;">✕</button>
+              </div>
+
+              <form id="tournamentForm">
+                <input type="hidden" id="tournamentId" value="">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                  <!-- French Column -->
+                  <div>
+                    <h3 style="margin-bottom: 1rem; color: #005CA9;">🇫🇷 Français</h3>
+                    
+                    <div class="form-group">
+                      <label class="form-label form-label-required">Name (French)</label>
+                      <input type="text" id="nameFr" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Subtitle (French)</label>
+                      <input type="text" id="subtitleFr" class="form-input" placeholder="e.g., 13-18 ans">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Description (French)</label>
+                      <textarea id="descriptionFr" class="form-input" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Format (French)</label>
+                      <input type="text" id="formatFr" class="form-input" placeholder="e.g., FFA / Élimination">
+                    </div>
+                  </div>
+
+                  <!-- English Column -->
+                  <div>
+                    <h3 style="margin-bottom: 1rem; color: #005CA9;">🇬🇧 English</h3>
+                    
+                    <div class="form-group">
+                      <label class="form-label form-label-required">Name (English)</label>
+                      <input type="text" id="nameEn" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Subtitle (English)</label>
+                      <input type="text" id="subtitleEn" class="form-input" placeholder="e.g., Ages 13-18">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Description (English)</label>
+                      <textarea id="descriptionEn" class="form-input" rows="3"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Format (English)</label>
+                      <input type="text" id="formatEn" class="form-input" placeholder="e.g., FFA / Elimination">
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Common Fields -->
+                <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 2px solid #e0e0e0;">
+                  <h3 style="margin-bottom: 1rem; color: #005CA9;">⚙️ Settings</h3>
+                  
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+                    <div class="form-group">
+                      <label class="form-label">Game Platform</label>
+                      <input type="text" id="gamePlatform" class="form-input" value="Roblox">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label form-label-required">Tournament Type</label>
+                      <select id="tournamentType" class="form-select" required>
+                        <option value="pvp">PvP / Combat</option>
+                        <option value="all-ages">All Ages / Racing</option>
+                        <option value="custom">Custom</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label form-label-required">Tournament Date</label>
+                      <input type="datetime-local" id="tournamentDate" class="form-input" required>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Time Display</label>
+                      <input type="text" id="tournamentTime" class="form-input" placeholder="e.g., 14h00 - 16h00">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Max Participants</label>
+                      <input type="number" id="maxParticipants" class="form-input" min="1">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label form-label-required">Status</label>
+                      <select id="tournamentStatus" class="form-select" required>
+                        <option value="draft">Draft</option>
+                        <option value="published">Published</option>
+                        <option value="completed">Completed</option>
+                        <option value="archived">Archived</option>
+                      </select>
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Display Order</label>
+                      <input type="number" id="displayOrder" class="form-input" value="1" min="0">
+                    </div>
+                  </div>
+                </div>
+
+                <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: flex-end;">
+                  <button type="button" class="btn btn-outline" id="cancelTournamentBtn">Cancel</button>
+                  <button type="submit" class="btn btn-primary" id="saveTournamentBtn">💾 Save Tournament</button>
+                </div>
+              </form>
             </div>
           </div>
+
         </div>
 
       </div>
@@ -293,6 +430,66 @@
       font-weight: 700;
       color: #8DC63F;
       font-size: 1.125rem;
+    }
+    
+    /* Modal Styles */
+    .modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    .modal.hidden {
+      display: none;
+    }
+    
+    .modal-content {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+      width: 90%;
+      animation: slideIn 0.3s ease;
+    }
+    
+    @keyframes slideIn {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    /* Badge Styles */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.75rem;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .badge-success {
+      background: #d4edda;
+      color: #155724;
+    }
+    
+    .badge-info {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+    
+    .badge-secondary {
+      background: #e2e3e5;
+      color: #383d41;
     }
   </style>
 

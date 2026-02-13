@@ -94,6 +94,9 @@
     
     // Set up export functionality
     document.getElementById('exportBtn').addEventListener('click', exportToCSV);
+    
+    // Set up tournament management
+    setupTournamentManagement();
   }
   
   function setupAdminTabs() {
@@ -509,6 +512,262 @@
     
     displayResultsForm(demoParticipants, 1);
   }
+
+  // ============================================
+  // TOURNAMENT MANAGEMENT
+  // ============================================
+  
+  let currentTournaments = [];
+  let editingTournamentId = null;
+  
+  function setupTournamentManagement() {
+    const createBtn = document.getElementById('createTournamentBtn');
+    const closeBtn = document.getElementById('closeTournamentModal');
+    const cancelBtn = document.getElementById('cancelTournamentBtn');
+    const form = document.getElementById('tournamentForm');
+    
+    if (createBtn) {
+      createBtn.addEventListener('click', showCreateTournamentForm);
+    }
+    
+    if (closeBtn) {
+      closeBtn.addEventListener('click', closeTournamentModal);
+    }
+    
+    if (cancelBtn) {
+      cancelBtn.addEventListener('click', closeTournamentModal);
+    }
+    
+    if (form) {
+      form.addEventListener('submit', handleTournamentSubmit);
+    }
+    
+    // Load tournaments when tab is active
+    loadTournaments();
+  }
+  
+  async function loadTournaments() {
+    if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
+      console.warn('Supabase not configured');
+      return;
+    }
+    
+    const supabase = window.supabaseConfig.supabase;
+    
+    try {
+      const { data: tournaments, error } = await supabase
+        .from('tournaments')
+        .select('*')
+        .order('display_order', { ascending: true });
+      
+      if (error) {
+        console.error('Error loading tournaments:', error);
+        return;
+      }
+      
+      currentTournaments = tournaments || [];
+      displayTournamentsTable(currentTournaments);
+    } catch (error) {
+      console.error('Error:', error);
+    }
+  }
+  
+  function displayTournamentsTable(tournaments) {
+    const tbody = document.getElementById('tournamentsTableBody');
+    
+    if (tournaments.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="5" style="text-align: center; padding: 2rem; color: #666;">
+            No tournaments yet. Click "Create New Tournament" to get started!
+          </td>
+        </tr>
+      `;
+      return;
+    }
+    
+    tbody.innerHTML = tournaments.map(t => `
+      <tr>
+        <td>
+          <strong style="color: #005CA9;">${escapeHtml(t.name_fr)}</strong><br>
+          <small style="color: #666;">${escapeHtml(t.name_en)}</small>
+        </td>
+        <td>${formatTournamentDate(t.tournament_date)}</td>
+        <td><span class="badge badge-${getStatusColor(t.status)}">${t.status}</span></td>
+        <td>${t.tournament_type}</td>
+        <td>
+          <button class="btn btn-outline" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;" onclick="editTournament('${t.id}')">
+            ✏️ Edit
+          </button>
+          <button class="btn btn-accent" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;" onclick="deleteTournament('${t.id}')">
+            🗑️ Delete
+          </button>
+        </td>
+      </tr>
+    `).join('');
+  }
+  
+  function formatTournamentDate(dateString) {
+    if (!dateString) return 'No date set';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('fr-CA', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  }
+  
+  function getStatusColor(status) {
+    switch (status) {
+      case 'published': return 'success';
+      case 'draft': return 'info';
+      case 'completed': return 'secondary';
+      case 'archived': return 'secondary';
+      default: return 'info';
+    }
+  }
+  
+  function showCreateTournamentForm() {
+    editingTournamentId = null;
+    document.getElementById('tournamentFormTitle').textContent = 'Create New Tournament';
+    document.getElementById('tournamentForm').reset();
+    document.getElementById('tournamentId').value = '';
+    document.getElementById('tournamentFormModal').classList.remove('hidden');
+  }
+  
+  window.editTournament = async function(tournamentId) {
+    editingTournamentId = tournamentId;
+    document.getElementById('tournamentFormTitle').textContent = 'Edit Tournament';
+    
+    const tournament = currentTournaments.find(t => t.id === tournamentId);
+    if (!tournament) return;
+    
+    // Fill form with tournament data
+    document.getElementById('tournamentId').value = tournament.id;
+    document.getElementById('nameFr').value = tournament.name_fr || '';
+    document.getElementById('nameEn').value = tournament.name_en || '';
+    document.getElementById('subtitleFr').value = tournament.subtitle_fr || '';
+    document.getElementById('subtitleEn').value = tournament.subtitle_en || '';
+    document.getElementById('descriptionFr').value = tournament.description_fr || '';
+    document.getElementById('descriptionEn').value = tournament.description_en || '';
+    document.getElementById('formatFr').value = tournament.format_fr || '';
+    document.getElementById('formatEn').value = tournament.format_en || '';
+    document.getElementById('gamePlatform').value = tournament.game_platform || 'Roblox';
+    document.getElementById('tournamentType').value = tournament.tournament_type || 'pvp';
+    document.getElementById('tournamentStatus').value = tournament.status || 'draft';
+    document.getElementById('tournamentTime').value = tournament.tournament_time || '';
+    document.getElementById('maxParticipants').value = tournament.max_participants || '';
+    document.getElementById('displayOrder').value = tournament.display_order || 1;
+    
+    // Format date for datetime-local input
+    if (tournament.tournament_date) {
+      const date = new Date(tournament.tournament_date);
+      const formatted = date.toISOString().slice(0, 16);
+      document.getElementById('tournamentDate').value = formatted;
+    }
+    
+    document.getElementById('tournamentFormModal').classList.remove('hidden');
+  };
+  
+  function closeTournamentModal() {
+    document.getElementById('tournamentFormModal').classList.add('hidden');
+    document.getElementById('tournamentForm').reset();
+    editingTournamentId = null;
+  }
+  
+  async function handleTournamentSubmit(event) {
+    event.preventDefault();
+    
+    if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
+      alert('Supabase not configured!');
+      return;
+    }
+    
+    const supabase = window.supabaseConfig.supabase;
+    const tournamentId = document.getElementById('tournamentId').value;
+    
+    const tournamentData = {
+      name_fr: document.getElementById('nameFr').value,
+      name_en: document.getElementById('nameEn').value,
+      subtitle_fr: document.getElementById('subtitleFr').value || null,
+      subtitle_en: document.getElementById('subtitleEn').value || null,
+      description_fr: document.getElementById('descriptionFr').value || null,
+      description_en: document.getElementById('descriptionEn').value || null,
+      format_fr: document.getElementById('formatFr').value || null,
+      format_en: document.getElementById('formatEn').value || null,
+      game_platform: document.getElementById('gamePlatform').value,
+      tournament_type: document.getElementById('tournamentType').value,
+      status: document.getElementById('tournamentStatus').value,
+      tournament_date: document.getElementById('tournamentDate').value ? new Date(document.getElementById('tournamentDate').value).toISOString() : null,
+      tournament_time: document.getElementById('tournamentTime').value || null,
+      max_participants: document.getElementById('maxParticipants').value ? parseInt(document.getElementById('maxParticipants').value) : null,
+      display_order: parseInt(document.getElementById('displayOrder').value) || 0,
+      updated_at: new Date().toISOString()
+    };
+    
+    try {
+      let result;
+      
+      if (tournamentId) {
+        // Update existing tournament
+        result = await supabase
+          .from('tournaments')
+          .update(tournamentData)
+          .eq('id', tournamentId);
+      } else {
+        // Create new tournament
+        result = await supabase
+          .from('tournaments')
+          .insert(tournamentData);
+      }
+      
+      if (result.error) {
+        console.error('Error saving tournament:', result.error);
+        alert('Error saving tournament: ' + result.error.message);
+        return;
+      }
+      
+      alert(tournamentId ? 'Tournament updated successfully!' : 'Tournament created successfully!');
+      closeTournamentModal();
+      loadTournaments();
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error saving tournament');
+    }
+  }
+  
+  window.deleteTournament = async function(tournamentId) {
+    if (!confirm('Are you sure you want to delete this tournament? This cannot be undone.')) {
+      return;
+    }
+    
+    if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
+      return;
+    }
+    
+    const supabase = window.supabaseConfig.supabase;
+    
+    try {
+      const { error } = await supabase
+        .from('tournaments')
+        .delete()
+        .eq('id', tournamentId);
+      
+      if (error) {
+        console.error('Error deleting tournament:', error);
+        alert('Error deleting tournament');
+        return;
+      }
+      
+      alert('Tournament deleted successfully!');
+      loadTournaments();
+    } catch (error) {
+      console.error('Error:', error);
+      alert('Error deleting tournament');
+    }
+  };
 
   // ============================================
   // UTILITY FUNCTIONS
