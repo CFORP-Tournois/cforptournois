@@ -102,6 +102,11 @@
     
     // Set up tournament management
     setupTournamentManagement();
+    
+    // Set up bracket management
+    if (window.initBracketManagement) {
+      window.initBracketManagement();
+    }
   }
   
   function setupAdminTabs() {

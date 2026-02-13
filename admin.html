@@ -17,7 +17,8 @@
   
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="css/main.css">
-  
+  <link rel="stylesheet" href="css/bracket.css">
+
   <!-- Supabase Client (CDN) -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
@@ -94,6 +95,9 @@
           </button>
           <button class="admin-tab" data-tab="results">
             🏆 Enter Results
+          </button>
+          <button class="admin-tab" data-tab="brackets">
+            🌳 Manage Brackets
           </button>
           <button class="admin-tab" data-tab="tournaments">
             ⚙️ Manage Tournaments
@@ -200,7 +204,113 @@
           </div>
         </div>
 
-        <!-- TAB 3: MANAGE TOURNAMENTS -->
+        <!-- TAB 3: MANAGE BRACKETS -->
+        <div id="tab-brackets" class="admin-tab-content hidden">
+          <h2 style="margin-bottom: 2rem;">Bracket Management</h2>
+          
+          <!-- Tournament Selection -->
+          <div style="max-width: 600px; margin-bottom: 2rem;">
+            <div class="form-group">
+              <label class="form-label">Select Tournament</label>
+              <select id="bracketTournament" class="form-select">
+                <option value="">-- Select Tournament --</option>
+                <!-- Will be populated dynamically -->
+              </select>
+            </div>
+          </div>
+
+          <!-- Bracket Status Display -->
+          <div id="bracketStatus" class="hidden" style="margin-bottom: 2rem; padding: 1.5rem; background: #E3F2FD; border-radius: 8px; border-left: 4px solid #005CA9;">
+            <h3 style="margin-bottom: 1rem;">Bracket Information</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+              <div>
+                <strong>Tournament:</strong> <span id="bracketTournamentName">-</span>
+              </div>
+              <div>
+                <strong>Bracket Style:</strong> <span id="bracketStyle">-</span>
+              </div>
+              <div>
+                <strong>Total Participants:</strong> <span id="bracketTotalParticipants">-</span>
+              </div>
+              <div>
+                <strong>Bracket Status:</strong> <span id="bracketCurrentStatus">-</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div id="bracketActions" class="hidden" style="margin-bottom: 2rem; display: flex; gap: 1rem; flex-wrap: wrap;">
+            <button class="btn btn-primary" id="generateBracketBtn">
+              ⚡ Generate Bracket
+            </button>
+            <button class="btn btn-outline" id="viewBracketBtn">
+              👁️ View Bracket
+            </button>
+            <button class="btn btn-accent" id="deleteBracketBtn">
+              🗑️ Delete Bracket
+            </button>
+          </div>
+
+          <!-- Generate Bracket Form -->
+          <div id="generateBracketForm" class="hidden" style="margin-bottom: 2rem; padding: 1.5rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <h3 style="margin-bottom: 1.5rem;">Generate Elimination Bracket</h3>
+            
+            <p style="margin-bottom: 1rem; color: #666;">
+              For <strong>Mixed</strong> tournaments: Select top finishers from FFA rounds to advance to elimination bracket.<br>
+              For <strong>Head-to-Head</strong> tournaments: Use all registered participants.
+            </p>
+
+            <div class="form-group">
+              <label class="form-label">Number of Players in Bracket</label>
+              <select id="bracketSize" class="form-select">
+                <option value="4">4 Players (Semi-finals)</option>
+                <option value="8" selected>8 Players (Quarter-finals)</option>
+                <option value="16">16 Players (Round of 16)</option>
+                <option value="32">32 Players (Round of 32)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Seeding Method</label>
+              <select id="seedingMethod" class="form-select">
+                <option value="points">By Points (FFA Leaderboard)</option>
+                <option value="random">Random Seeding</option>
+                <option value="manual">Manual Seeding</option>
+              </select>
+              <p class="form-help">For mixed tournaments, use "By Points" to seed based on FFA results</p>
+            </div>
+
+            <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+              <button class="btn btn-outline" id="cancelGenerateBracket">Cancel</button>
+              <button class="btn btn-primary" id="confirmGenerateBracket">✓ Generate Bracket</button>
+            </div>
+          </div>
+
+          <!-- Bracket Display/Management -->
+          <div id="bracketDisplay" class="hidden">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+              <h3>Bracket Matches</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-outline" id="refreshBracket" style="padding: 0.5rem 1rem;">
+                  🔄 Refresh
+                </button>
+              </div>
+            </div>
+
+            <div id="bracketMatchesContainer">
+              <!-- Bracket matches will be displayed here -->
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div id="bracketEmpty" class="hidden" style="text-align: center; padding: 3rem; background: #f5f5f5; border-radius: 12px;">
+            <p style="font-size: 3rem; margin-bottom: 1rem;">🌳</p>
+            <h3 style="margin-bottom: 0.5rem;">No Bracket Generated</h3>
+            <p style="color: #666;">Select a tournament above to generate or manage brackets</p>
+          </div>
+        </div>
+
+        <!-- TAB 4: MANAGE TOURNAMENTS -->
         <div id="tab-tournaments" class="admin-tab-content hidden">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
             <h2>Tournament Management</h2>
@@ -372,6 +482,7 @@
   <!-- SCRIPTS -->
   <script src="js/config.js"></script>
   <script src="js/i18n.js"></script>
+  <script src="js/bracket-admin.js"></script>
   <script src="js/admin.js"></script>
 
   <style>
