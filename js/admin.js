@@ -250,8 +250,21 @@
   // ============================================
   
   function setupResultsEntry() {
-    document.getElementById('loadResultsBtn').addEventListener('click', loadResultsForm);
+    document.getElementById('loadResultsBtn').addEventListener('click', async () => {
+      await loadResultsForm();
+      await loadExistingResults();
+    });
     document.getElementById('filterTournament').addEventListener('change', loadParticipants);
+    
+    // Existing results management
+    document.getElementById('resultsTournament').addEventListener('change', loadExistingResults);
+    document.getElementById('refreshExistingBtn').addEventListener('click', loadExistingResults);
+    document.getElementById('filterRound').addEventListener('change', () => {
+      const tournament = document.getElementById('resultsTournament').value;
+      if (tournament) {
+        loadExistingResults();
+      }
+    });
   }
   
   async function loadResultsForm() {
@@ -449,11 +462,261 @@
       
       console.log('✅ Results saved successfully:', match);
       
+      // Reload existing results after saving
+      await loadExistingResults();
+      
     } catch (error) {
       console.error('Error saving results:', error);
       alert('Error saving results: ' + error.message);
     }
   }
+
+  // ============================================
+  // VIEW/EDIT/DELETE EXISTING RESULTS
+  // ============================================
+  
+  async function loadExistingResults() {
+    const tournament = document.getElementById('resultsTournament').value;
+    
+    if (!tournament) {
+      document.getElementById('existingResultsContainer').classList.add('hidden');
+      return;
+    }
+    
+    try {
+      if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
+        // Demo mode - hide the section
+        document.getElementById('existingResultsContainer').classList.add('hidden');
+        return;
+      }
+      
+      const supabase = window.supabaseConfig.supabase;
+      const TABLES = window.supabaseConfig.TABLES;
+      
+      // Fetch all matches for this tournament
+      const { data: matches, error } = await supabase
+        .from(TABLES.MATCHES)
+        .select('*')
+        .eq('tournament_type', tournament)
+        .order('round_number', { ascending: true });
+      
+      if (error) {
+        console.error('Error loading existing results:', error);
+        return;
+      }
+      
+      // Show container
+      document.getElementById('existingResultsContainer').classList.remove('hidden');
+      
+      if (!matches || matches.length === 0) {
+        document.getElementById('noExistingResults').classList.remove('hidden');
+        document.getElementById('existingResultsBody').innerHTML = '';
+        return;
+      }
+      
+      document.getElementById('noExistingResults').classList.add('hidden');
+      
+      // Populate round filter dropdown
+      const rounds = [...new Set(matches.map(m => m.round_number))].sort((a, b) => a - b);
+      const filterRound = document.getElementById('filterRound');
+      filterRound.innerHTML = '<option value="all">All Rounds</option>' + 
+        rounds.map(r => `<option value="${r}">Round ${r}</option>`).join('');
+      
+      // Display results
+      displayExistingResults(matches);
+      
+    } catch (error) {
+      console.error('Error loading existing results:', error);
+    }
+  }
+  
+  function displayExistingResults(matches) {
+    const filterRound = document.getElementById('filterRound').value;
+    const tbody = document.getElementById('existingResultsBody');
+    tbody.innerHTML = '';
+    
+    // Flatten matches into individual result rows
+    const results = [];
+    matches.forEach(match => {
+      if (match.scores) {
+        Object.entries(match.scores).forEach(([username, scoreData]) => {
+          results.push({
+            matchId: match.id,
+            round: match.round_number,
+            username: username,
+            placement: scoreData.placement,
+            points: scoreData.points,
+            allScores: match.scores,
+            participantIds: match.participant_ids
+          });
+        });
+      }
+    });
+    
+    // Filter by round if selected
+    const filteredResults = filterRound === 'all' 
+      ? results 
+      : results.filter(r => r.round.toString() === filterRound);
+    
+    // Sort by round, then placement
+    filteredResults.sort((a, b) => {
+      if (a.round !== b.round) return a.round - b.round;
+      return a.placement - b.placement;
+    });
+    
+    // Render rows
+    filteredResults.forEach((result, index) => {
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td style="text-align: center; font-weight: 600;">${result.round}</td>
+        <td style="font-weight: 600;">${escapeHtml(result.username)}</td>
+        <td style="text-align: center;">
+          <input 
+            type="number" 
+            class="form-input" 
+            style="width: 80px; text-align: center; padding: 0.25rem;" 
+            value="${result.placement}" 
+            min="1" 
+            data-match-id="${result.matchId}"
+            data-username="${escapeHtml(result.username)}"
+            data-original-placement="${result.placement}"
+          >
+        </td>
+        <td style="text-align: center; font-weight: 600; color: #8DC63F; font-size: 1.125rem;">
+          ${result.points}
+        </td>
+        <td style="text-align: center;">
+          <button 
+            class="btn btn-sm btn-secondary" 
+            onclick="window.adminUpdateResult('${result.matchId}', '${escapeHtml(result.username)}')"
+            style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;"
+          >
+            💾 Update
+          </button>
+          <button 
+            class="btn btn-sm btn-outline" 
+            onclick="window.adminDeleteResult('${result.matchId}', '${escapeHtml(result.username)}')"
+            style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #E6007E; border-color: #E6007E;"
+          >
+            🗑️ Delete
+          </button>
+        </td>
+      `;
+      tbody.appendChild(row);
+    });
+  }
+  
+  window.adminUpdateResult = async function(matchId, username) {
+    const input = document.querySelector(`input[data-match-id="${matchId}"][data-username="${escapeHtml(username)}"]`);
+    const newPlacement = parseInt(input.value);
+    const originalPlacement = parseInt(input.dataset.originalPlacement);
+    
+    if (newPlacement === originalPlacement) {
+      alert('No changes detected.');
+      return;
+    }
+    
+    if (!newPlacement || newPlacement < 1) {
+      alert('Please enter a valid placement (1 or higher).');
+      return;
+    }
+    
+    if (!confirm(`Update ${username}'s placement from ${originalPlacement} to ${newPlacement}?`)) {
+      input.value = originalPlacement;
+      return;
+    }
+    
+    try {
+      const supabase = window.supabaseConfig.supabase;
+      const TABLES = window.supabaseConfig.TABLES;
+      
+      // Fetch the match
+      const { data: match, error: fetchError } = await supabase
+        .from(TABLES.MATCHES)
+        .select('*')
+        .eq('id', matchId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      // Update the scores object
+      const updatedScores = { ...match.scores };
+      updatedScores[username] = {
+        placement: newPlacement,
+        points: calculatePoints(newPlacement)
+      };
+      
+      // Update the match in database
+      const { error: updateError } = await supabase
+        .from(TABLES.MATCHES)
+        .update({ scores: updatedScores })
+        .eq('id', matchId);
+      
+      if (updateError) throw updateError;
+      
+      alert('✅ Result updated successfully!');
+      
+      // Reload results
+      await loadExistingResults();
+      
+    } catch (error) {
+      console.error('Error updating result:', error);
+      alert('Error updating result: ' + error.message);
+    }
+  };
+  
+  window.adminDeleteResult = async function(matchId, username) {
+    if (!confirm(`Are you sure you want to delete ${username}'s result from this round?\n\nThis cannot be undone.`)) {
+      return;
+    }
+    
+    try {
+      const supabase = window.supabaseConfig.supabase;
+      const TABLES = window.supabaseConfig.TABLES;
+      
+      // Fetch the match
+      const { data: match, error: fetchError } = await supabase
+        .from(TABLES.MATCHES)
+        .select('*')
+        .eq('id', matchId)
+        .single();
+      
+      if (fetchError) throw fetchError;
+      
+      // Remove this participant from the scores
+      const updatedScores = { ...match.scores };
+      delete updatedScores[username];
+      
+      // If no more participants in this match, delete the entire match
+      if (Object.keys(updatedScores).length === 0) {
+        const { error: deleteError } = await supabase
+          .from(TABLES.MATCHES)
+          .delete()
+          .eq('id', matchId);
+        
+        if (deleteError) throw deleteError;
+        
+        alert('✅ Result deleted (entire match removed as it had no remaining participants).');
+      } else {
+        // Update the match with remaining participants
+        const { error: updateError } = await supabase
+          .from(TABLES.MATCHES)
+          .update({ scores: updatedScores })
+          .eq('id', matchId);
+        
+        if (updateError) throw updateError;
+        
+        alert('✅ Result deleted successfully!');
+      }
+      
+      // Reload results
+      await loadExistingResults();
+      
+    } catch (error) {
+      console.error('Error deleting result:', error);
+      alert('Error deleting result: ' + error.message);
+    }
+  };
 
   // ============================================
   // EXPORT TO CSV

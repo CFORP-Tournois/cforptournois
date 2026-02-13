@@ -202,6 +202,44 @@
               </div>
             </div>
           </div>
+
+          <!-- VIEW/EDIT EXISTING RESULTS -->
+          <div id="existingResultsContainer" class="hidden" style="margin-top: 3rem;">
+            <div style="background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h3>Existing Results</h3>
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                  <label class="form-label" style="margin: 0;">Filter by Round:</label>
+                  <select id="filterRound" class="form-select" style="width: auto;">
+                    <option value="all">All Rounds</option>
+                  </select>
+                  <button class="btn btn-secondary" id="refreshExistingBtn">🔄 Refresh</button>
+                </div>
+              </div>
+              
+              <div class="table-container">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th style="width: 80px;">Round</th>
+                      <th>Participant</th>
+                      <th style="width: 120px;">Placement</th>
+                      <th style="width: 120px;">Points</th>
+                      <th style="width: 150px;">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="existingResultsBody">
+                    <!-- Existing results will be inserted here -->
+                  </tbody>
+                </table>
+              </div>
+              
+              <div id="noExistingResults" class="hidden" style="text-align: center; padding: 3rem; color: #666;">
+                <p style="font-size: 1.125rem; margin-bottom: 0.5rem;">📊 No results found</p>
+                <p style="font-size: 0.875rem;">Enter results above to see them here.</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- TAB 3: MANAGE BRACKETS -->
