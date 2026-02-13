@@ -334,14 +334,17 @@
           displayScoreboardResults(matches, tournamentObj);
         }
 
-        // If tournament has bracket style, load bracket
-        if (tournamentObj.bracket_style === 'head-to-head' || tournamentObj.bracket_style === 'mixed') {
+        // Load bracket only for head-to-head or mixed (not scoreboard); clear otherwise
+        const bracketStyle = (tournamentObj.bracket_style || 'scoreboard').toLowerCase();
+        const bracketSectionEl = document.getElementById('bracketTreeSection');
+        if (bracketSectionEl) bracketSectionEl.innerHTML = '';
+        if (bracketStyle === 'head-to-head' || bracketStyle === 'mixed') {
           await loadAndDisplayBracketOnResults(tournamentObj);
         }
 
         // If no results at all, show empty state
         if ((!matches || matches.length === 0) && 
-            (tournamentObj.bracket_style !== 'head-to-head' && tournamentObj.bracket_style !== 'mixed')) {
+            bracketStyle !== 'head-to-head' && bracketStyle !== 'mixed') {
           showNoResults();
         }
       } catch (error) {

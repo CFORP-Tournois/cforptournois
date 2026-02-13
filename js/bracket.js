@@ -199,6 +199,9 @@
         return;
       }
       
+      // Clear bracket immediately when switching tournaments (only re-show if this one has bracket)
+      clearBracketSection();
+      
       // Fetch participants for this tournament using tournament_id
       console.log('👥 Fetching participants for tournament_id:', tournamentObj.id);
       const { data: participants, error } = await supabase
@@ -252,8 +255,9 @@
         displayParticipants(participants);
       }
       
-      // Load bracket only if this tournament uses head-to-head or mixed; otherwise clear it
-      if (tournamentObj && (tournamentObj.bracket_style === 'head-to-head' || tournamentObj.bracket_style === 'mixed')) {
+      // Load bracket only if this tournament uses head-to-head or mixed (not scoreboard)
+      const bracketStyle = (tournamentObj.bracket_style || 'scoreboard').toLowerCase();
+      if (bracketStyle === 'head-to-head' || bracketStyle === 'mixed') {
         await loadAndDisplayBracketTree(tournamentObj);
       } else {
         clearBracketSection();
