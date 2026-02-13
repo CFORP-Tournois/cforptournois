@@ -801,10 +801,13 @@
   let editingTournamentId = null;
   
   function setupTournamentManagement() {
+    console.log('🔧 Setting up tournament management...');
     const createBtn = document.getElementById('createTournamentBtn');
     const closeBtn = document.getElementById('closeTournamentModal');
     const cancelBtn = document.getElementById('cancelTournamentBtn');
     const form = document.getElementById('tournamentForm');
+    
+    console.log('📝 Form element found:', form ? 'YES' : 'NO');
     
     if (createBtn) {
       createBtn.addEventListener('click', showCreateTournamentForm);
@@ -819,7 +822,10 @@
     }
     
     if (form) {
+      console.log('✅ Attaching submit handler to form');
       form.addEventListener('submit', handleTournamentSubmit);
+    } else {
+      console.error('❌ Tournament form not found!');
     }
     
     // Load tournaments when tab is active
@@ -959,6 +965,7 @@
   }
   
   async function handleTournamentSubmit(event) {
+    console.log('🚀 TOURNAMENT SUBMIT TRIGGERED!');
     event.preventDefault();
     
     if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
