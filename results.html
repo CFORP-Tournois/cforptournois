@@ -329,22 +329,30 @@
           console.error('Error loading matches:', matchError);
         }
 
-        // Calculate leaderboard if we have match data
-        if (matches && matches.length > 0) {
-          displayScoreboardResults(matches, tournamentObj);
-        }
-
-        // Load bracket only for head-to-head or mixed (not scoreboard); clear otherwise
         const bracketStyle = (tournamentObj.bracket_style || 'scoreboard').toLowerCase();
         const bracketSectionEl = document.getElementById('bracketTreeSection');
         if (bracketSectionEl) bracketSectionEl.innerHTML = '';
+
+        // Head-to-head or mixed: podium/standings come from bracket, not FFA matches
         if (bracketStyle === 'head-to-head' || bracketStyle === 'mixed') {
           await loadAndDisplayBracketOnResults(tournamentObj);
+          // If no bracket data, fall back to scoreboard from matches (mixed may have FFA rounds)
+          if (matches && matches.length > 0) {
+            const hasBracket = !!document.getElementById('bracketTreeSection')?.querySelector('.bracket-match');
+            if (!hasBracket) displayScoreboardResults(matches, tournamentObj);
+          }
+        } else {
+          // Scoreboard-only: use matches for leaderboard
+          if (matches && matches.length > 0) {
+            displayScoreboardResults(matches, tournamentObj);
+          } else {
+            showNoResults();
+          }
         }
 
-        // If no results at all, show empty state
-        if ((!matches || matches.length === 0) && 
-            bracketStyle !== 'head-to-head' && bracketStyle !== 'mixed') {
+        // If we have neither bracket nor matches, show empty state
+        const hasBracket = !!document.getElementById('bracketTreeSection')?.innerHTML?.trim();
+        if ((!matches || matches.length === 0) && !hasBracket) {
           showNoResults();
         }
       } catch (error) {
@@ -362,38 +370,27 @@
       document.getElementById('loadingState').classList.add('hidden');
       document.getElementById('resultsContent').classList.remove('hidden');
 
-      // Group results by participant
+      // Matches table uses scores: { [username]: { placement, points } }, not participant_id/points per row
       const participantScores = {};
-      
       matches.forEach(match => {
-        if (!participantScores[match.participant_id]) {
-          participantScores[match.participant_id] = {
-            id: match.participant_id,
-            totalPoints: 0,
-            matchCount: 0
-          };
-        }
-        participantScores[match.participant_id].totalPoints += match.points || 0;
-        participantScores[match.participant_id].matchCount++;
+        const scores = match.scores && typeof match.scores === 'object' ? match.scores : {};
+        Object.entries(scores).forEach(([username, data]) => {
+          if (!username) return;
+          const points = data?.points ?? 0;
+          if (!participantScores[username]) {
+            participantScores[username] = { totalPoints: 0, matchCount: 0 };
+          }
+          participantScores[username].totalPoints += points;
+          participantScores[username].matchCount++;
+        });
       });
 
-      // Get participant names using tournament_id
-      const supabase = window.supabaseConfig.supabase;
-      const { data: participants } = await supabase
-        .from('participants')
-        .select('*')
-        .eq('tournament_id', tournament.id);
-
       const leaderboard = Object.entries(participantScores)
-        .map(([id, score]) => {
-          const participant = participants?.find(p => p.id === id);
-          return {
-            id,
-            username: participant?.roblox_username || 'Unknown',
-            totalPoints: score.totalPoints,
-            matchCount: score.matchCount
-          };
-        })
+        .map(([username, score]) => ({
+          username: username || 'Unknown',
+          totalPoints: score.totalPoints,
+          matchCount: score.matchCount
+        }))
         .sort((a, b) => b.totalPoints - a.totalPoints);
 
       // Display podium (top 3)
@@ -453,9 +450,73 @@
         }
 
         displayBracketOnResults(data);
+        updatePodiumAndStandingsFromBracket(data);
       } catch (error) {
         console.error('Error:', error);
       }
+    }
+
+    /** Build podium and full standings from bracket (1st = final winner, 2nd = final loser, 3rd/4th = semi losers). */
+    function updatePodiumAndStandingsFromBracket(bracketMatches) {
+      document.getElementById('loadingState').classList.add('hidden');
+      document.getElementById('noResultsState').classList.add('hidden');
+      document.getElementById('resultsContent').classList.remove('hidden');
+
+      const rounds = {};
+      bracketMatches.forEach(m => {
+        if (!rounds[m.round_number]) rounds[m.round_number] = [];
+        rounds[m.round_number].push(m);
+      });
+      const roundNumbers = Object.keys(rounds).map(Number).sort((a, b) => a - b);
+      const finalRound = roundNumbers[roundNumbers.length - 1];
+      const semiRound = roundNumbers.length >= 2 ? roundNumbers[roundNumbers.length - 2] : null;
+
+      const getUsername = (field) => getParticipantUsername(field) || '—';
+      const leaderboard = [];
+
+      // Final: winner = 1st, loser = 2nd
+      const finalMatches = rounds[finalRound] || [];
+      const finalMatch = finalMatches.find(m => m.winner_id) || finalMatches[0];
+      if (finalMatch) {
+        const winnerName = getUsername(finalMatch.winner);
+        const loserId = finalMatch.winner_id === finalMatch.player1_id ? finalMatch.player2_id : finalMatch.player1_id;
+        const loserName = finalMatch.winner_id === finalMatch.player1_id
+          ? getUsername(finalMatch.player2) : getUsername(finalMatch.player1);
+        if (winnerName && winnerName !== '—') leaderboard.push({ rank: 1, username: winnerName, points: 1 });
+        if (loserName && loserName !== '—') leaderboard.push({ rank: 2, username: loserName, points: 0 });
+      }
+
+      // Semi losers = 3rd / 4th
+      if (semiRound != null) {
+        const semiMatches = rounds[semiRound] || [];
+        semiMatches.forEach(match => {
+          const w = getUsername(match.winner);
+          const p1 = getUsername(match.player1);
+          const p2 = getUsername(match.player2);
+          const loser = (w === p1 ? p2 : p1) || (p1 !== '—' ? p1 : p2);
+          if (loser && loser !== '—') leaderboard.push({ rank: leaderboard.length + 1, username: loser, points: 0 });
+        });
+      }
+
+      // Podium
+      const first = leaderboard[0], second = leaderboard[1], third = leaderboard[2];
+      document.getElementById('first-username').textContent = first?.username ?? '—';
+      document.getElementById('first-points').textContent = first ? (first.points ? (window.i18n?.t?.('results.winner') || 'Winner') : '—') : '— points';
+      document.getElementById('second-username').textContent = second?.username ?? '—';
+      document.getElementById('second-points').textContent = second ? '—' : '— points';
+      document.getElementById('third-username').textContent = third?.username ?? '—';
+      document.getElementById('third-points').textContent = third ? '—' : '— points';
+
+      // Full standings table
+      const tbody = document.getElementById('standingsTableBody');
+      tbody.innerHTML = leaderboard.map((p, i) => `
+        <tr>
+          <td style="font-weight: 700;">${i + 1}</td>
+          <td style="font-weight: 600;">${escapeHtml(p.username)}</td>
+          <td>—</td>
+          <td style="font-weight: 700; color: #6ab04c;">${p.points}</td>
+        </tr>
+      `).join('');
     }
 
     function displayBracketOnResults(matches) {

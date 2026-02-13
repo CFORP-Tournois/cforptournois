@@ -243,6 +243,7 @@ const translations = {
       secondPlace: "2e place",
       thirdPlace: "3e place",
       congratulations: "Félicitations!",
+      winner: "Vainqueur",
       
       // Stats
       statsTitle: "Statistiques du tournoi",
@@ -536,6 +537,7 @@ const translations = {
       secondPlace: "2nd Place",
       thirdPlace: "3rd Place",
       congratulations: "Congratulations!",
+      winner: "Winner",
       
       // Stats
       statsTitle: "Tournament Statistics",
