@@ -71,23 +71,11 @@
       </div>
 
       <!-- Tournament Selection Tabs -->
-      <div style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap;">
-        <button 
-          id="tab-pvp" 
-          class="btn btn-primary tournament-tab active" 
-          data-tournament="pvp"
-          style="min-width: 200px;"
-        >
-          🎮 RIVALS (13-18)
-        </button>
-        <button 
-          id="tab-racing" 
-          class="btn btn-secondary tournament-tab" 
-          data-tournament="all-ages"
-          style="min-width: 200px;"
-        >
-          🏁 <span data-i18n="landing.tournament2Title">Course de voitures</span>
-        </button>
+      <div id="tournamentTabs" style="display: flex; gap: 1rem; justify-content: center; margin-bottom: 2rem; flex-wrap: wrap;">
+        <!-- Tournament tabs will be loaded dynamically -->
+        <div style="text-align: center; padding: 1rem; color: #666;">
+          <span data-i18n="common.loading">Chargement...</span>
+        </div>
       </div>
 
       <!-- Tournament Info Card -->
