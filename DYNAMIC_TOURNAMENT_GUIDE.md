@@ -43,8 +43,9 @@ Your tournament system is now **fully dynamic**! No more editing HTML files. Eve
 ## Tournament Statuses
 
 - **Draft**: Not visible on the website (work in progress)
-- **Published**: Visible on landing page and signup form
-- **Completed**: Archived but still in database
+- **Published**: Visible on landing page with signup button enabled
+- **In Progress**: Tournament is running - shows on landing page but signups are CLOSED
+- **Completed**: Tournament finished - archived but still in database
 - **Archived**: Hidden from main view
 
 ## What's Dynamic Now?
@@ -78,7 +79,7 @@ Your `tournaments` table contains:
 - tournament_date (timestamp)
 - tournament_time (display string, e.g., "14h00 - 16h00")
 - max_participants (number)
-- status (draft, published, completed, archived)
+- status (draft, published, in-progress, completed, archived)
 - display_order (number, lower = shows first)
 - created_at / updated_at
 ```
@@ -86,7 +87,7 @@ Your `tournaments` table contains:
 ## Tips
 
 - **Display Order**: Use 1, 2, 3... to control which tournaments appear first
-- **Status**: Only "published" tournaments appear on the website
+- **Status**: "Published" = signups open, "In Progress" = tournament running (signups closed), others hidden
 - **Dates**: Use the date picker for accurate countdowns
 - **Time Display**: Can be different from the actual tournament_date (e.g., "14h00 - 16h00" shows while countdown uses exact timestamp)
 - **Bilingual**: BOTH French and English names are required for best user experience

@@ -45,7 +45,7 @@
       const { data, error } = await supabase
         .from('tournaments')
         .select('*')
-        .eq('status', 'published')
+        .in('status', ['published', 'in-progress'])
         .order('display_order', { ascending: true });
       
       if (error) {

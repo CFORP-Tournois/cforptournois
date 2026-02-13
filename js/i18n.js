@@ -35,6 +35,8 @@ const translations = {
       
       // Call to Action
       registerNow: "S'inscrire maintenant",
+      signupClosed: "Inscriptions fermées",
+      tournamentInProgress: "Tournoi en cours",
       viewBrackets: "Voir les tableaux",
       joinTeams: "Rejoindre la réunion Teams",
       scanQR: "Scannez le code QR pour vous inscrire",
@@ -305,6 +307,8 @@ const translations = {
       
       // Call to Action
       registerNow: "Register Now",
+      signupClosed: "Signups Closed",
+      tournamentInProgress: "Tournament in Progress",
       viewBrackets: "View Brackets",
       joinTeams: "Join Teams Meeting",
       scanQR: "Scan QR code to register",

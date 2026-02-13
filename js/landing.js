@@ -33,7 +33,7 @@
       const { data, error } = await supabase
         .from('tournaments')
         .select('*')
-        .eq('status', 'published')
+        .in('status', ['published', 'in-progress'])
         .order('display_order', { ascending: true });
       
       if (error) {
@@ -143,7 +143,18 @@
           </div>
         </div>
         
-        <a href="signup.html?tournament=${encodeURIComponent(tournament.tournament_type)}" class="btn ${index % 2 === 0 ? 'btn-primary' : 'btn-secondary'}" style="width: 100%; margin-top: 1rem;"><span data-i18n="landing.registerNow">S'inscrire maintenant</span></a>
+        ${tournament.status === 'in-progress' ? `
+          <div style="margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #E6007E 0%, #c4005f 100%); border-radius: 8px; text-align: center;">
+            <p style="color: white; font-weight: 700; font-size: 1.125rem; margin: 0;">
+              🏆 <span data-i18n="landing.tournamentInProgress">Tournoi en cours</span>
+            </p>
+            <p style="color: rgba(255,255,255,0.9); font-size: 0.875rem; margin: 0.5rem 0 0 0;">
+              <span data-i18n="landing.signupClosed">Inscriptions fermées</span>
+            </p>
+          </div>
+        ` : `
+          <a href="signup.html?tournament=${encodeURIComponent(tournament.tournament_type)}" class="btn ${index % 2 === 0 ? 'btn-primary' : 'btn-secondary'}" style="width: 100%; margin-top: 1rem;"><span data-i18n="landing.registerNow">S'inscrire maintenant</span></a>
+        `}
       </article>
     `;
   }
