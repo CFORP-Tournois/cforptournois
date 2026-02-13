@@ -209,9 +209,13 @@
       const supabase = window.supabaseConfig.supabase;
       const TABLES = window.supabaseConfig.TABLES;
       
+      // Join with tournaments to get tournament names
       let query = supabase
         .from(TABLES.PARTICIPANTS)
-        .select('*')
+        .select(`
+          *,
+          tournament:tournaments!inner(id, name_en, name_fr, tournament_type)
+        `)
         .order('signup_timestamp', { ascending: false });
       
       // Apply filter using tournament_id
@@ -248,11 +252,18 @@
       return;
     }
     
-    tbody.innerHTML = participants.map((p, index) => `
+    tbody.innerHTML = participants.map((p, index) => {
+      // Get tournament name from joined data or fallback
+      const tournament = p.tournament;
+      const tournamentName = tournament 
+        ? (tournament.name_en || tournament.name_fr || 'Unknown Tournament')
+        : (adminTournaments.find(t => t.id === p.tournament_id)?.name_en || p.tournament_type || 'Unknown');
+      
+      return `
       <tr>
         <td>${index + 1}</td>
         <td style="font-weight: 600; color: #005CA9;">${escapeHtml(p.roblox_username)}</td>
-        <td>${getTournamentName(p.tournament_type)}</td>
+        <td>${escapeHtml(tournamentName)}</td>
         <td>${formatDate(p.signup_timestamp)}</td>
         <td>
           <button class="btn btn-accent" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;" onclick="deleteParticipant('${p.id}')">
@@ -260,11 +271,8 @@
           </button>
         </td>
       </tr>
-    `).join('');
-  }
-  
-  function getTournamentName(type) {
-    return type === 'pvp' ? 'RIVALS (13-18)' : 'Racing (All Ages)';
+    `;
+    }).join('');
   }
   
   function formatDate(timestamp) {
