@@ -7,6 +7,9 @@
   let currentTournament = null; // Will be set to first tournament
   let realtimeSubscription = null;
   let tournaments = [];
+  let currentMatches = []; // Store matches for filtering
+  let currentParticipants = []; // Store participants for filtering
+  let currentRoundFilter = 'overall'; // Current round filter
 
   // Wait for DOM to be ready
   document.addEventListener('DOMContentLoaded', initBracketPage);
@@ -221,6 +224,9 @@
         return;
       }
       
+      // Store participants globally
+      currentParticipants = participants;
+      
       // Get tournament object
       const tournamentObj = tournaments.find(t => t.tournament_type === tournament);
       if (!tournamentObj) {
@@ -233,7 +239,8 @@
       const { data: matches, error: matchError } = await supabase
         .from(TABLES.MATCHES)
         .select('*')
-        .eq('tournament_type', tournament);
+        .eq('tournament_type', tournament)
+        .order('round_number', { ascending: true });
 
       if (matchError) {
         console.error('❌ Error fetching matches:', matchError);
@@ -241,10 +248,14 @@
 
       console.log('📊 Found matches:', matches ? matches.length : 0);
 
+      // Store matches globally
+      currentMatches = matches || [];
+
       // Calculate leaderboard if we have results
       if (matches && matches.length > 0) {
         console.log('✅ Displaying leaderboard with', matches.length, 'matches');
-        displayLeaderboard(participants, matches);
+        setupRoundFilter(matches);
+        displayLeaderboard(participants, matches, 'overall');
       } else {
         // No results yet, show participant list
         console.log('ℹ️ No matches found - showing participant list');
@@ -384,13 +395,52 @@
     `;
   }
   
-  function displayLeaderboard(participants, matches) {
+  function setupRoundFilter(matches) {
+    // Get unique rounds
+    const rounds = [...new Set(matches.map(m => m.round_number))].sort((a, b) => a - b);
+    
+    const filterContainer = document.getElementById('roundFilterContainer');
+    const filterSelect = document.getElementById('roundFilter');
+    
+    if (!filterSelect) return;
+    
+    // Get current language for translations
+    const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
+    const roundText = translations[currentLang].bracket.round;
+    const overallText = translations[currentLang].bracket.overallStandings;
+    
+    // Populate dropdown
+    filterSelect.innerHTML = `<option value="overall">${overallText}</option>`;
+    rounds.forEach(round => {
+      const option = document.createElement('option');
+      option.value = round;
+      option.textContent = `${roundText} ${round}`;
+      filterSelect.appendChild(option);
+    });
+    
+    // Show the filter
+    filterContainer.classList.remove('hidden');
+    
+    // Add event listener
+    filterSelect.addEventListener('change', (e) => {
+      currentRoundFilter = e.target.value;
+      displayLeaderboard(currentParticipants, currentMatches, currentRoundFilter);
+    });
+  }
+
+  function displayLeaderboard(participants, matches, roundFilter = 'overall') {
     hideLoading();
     
     // Update tournament info
     updateTournamentInfo(participants);
     
-    // Calculate total points per participant
+    // Filter matches by round if needed
+    let filteredMatches = matches;
+    if (roundFilter !== 'overall') {
+      filteredMatches = matches.filter(m => m.round_number === parseInt(roundFilter));
+    }
+    
+    // Calculate points per participant from scores object
     const participantScores = {};
     
     participants.forEach(p => {
@@ -402,10 +452,16 @@
       };
     });
 
-    matches.forEach(match => {
-      if (participantScores[match.participant_id]) {
-        participantScores[match.participant_id].totalPoints += match.points || 0;
-        participantScores[match.participant_id].roundsPlayed++;
+    // Extract scores from matches
+    filteredMatches.forEach(match => {
+      if (match.scores) {
+        Object.entries(match.scores).forEach(([username, scoreData]) => {
+          const participant = participants.find(p => p.roblox_username === username);
+          if (participant && participantScores[participant.id]) {
+            participantScores[participant.id].totalPoints += scoreData.points || 0;
+            participantScores[participant.id].roundsPlayed++;
+          }
+        });
       }
     });
 

@@ -106,10 +106,21 @@
 
       <!-- Participants List -->
       <div id="participantsSection" class="hidden">
-        <h2 style="margin-bottom: 1.5rem;">
-          <span data-i18n="bracket.participants">Participants</span> 
-          (<span id="participantCountDisplay">0</span>)
-        </h2>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+          <h2 style="margin: 0;">
+            <span data-i18n="bracket.participants">Participants</span> 
+            (<span id="participantCountDisplay">0</span>)
+          </h2>
+          
+          <div id="roundFilterContainer" class="hidden" style="display: flex; align-items: center; gap: 0.75rem;">
+            <label style="font-weight: 600; color: #666; font-size: 0.9rem;">
+              <span data-i18n="bracket.viewRound">View:</span>
+            </label>
+            <select id="roundFilter" class="form-select" style="width: auto; padding: 0.5rem 1rem;">
+              <option value="overall" data-i18n="bracket.overallStandings">Overall Standings</option>
+            </select>
+          </div>
+        </div>
         
         <div id="participantsList" class="tournament-grid">
           <!-- Participant cards will be inserted here -->

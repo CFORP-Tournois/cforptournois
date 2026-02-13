@@ -156,6 +156,9 @@ const translations = {
       rounds: "Rondes",
       points: "Points",
       tie: "ÉGALITÉ",
+      viewRound: "Afficher :",
+      overallStandings: "Classement général",
+      round: "Ronde",
       
       // Empty State
       noParticipants: "Aucun participant inscrit",
@@ -437,6 +440,9 @@ const translations = {
       rounds: "Rounds",
       points: "Points",
       tie: "TIE",
+      viewRound: "View:",
+      overallStandings: "Overall Standings",
+      round: "Round",
       
       // Empty State
       noParticipants: "No participants registered",
