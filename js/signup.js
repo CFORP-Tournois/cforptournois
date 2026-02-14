@@ -311,7 +311,7 @@
     }
 
     // Fetch Roblox display name + avatar via Edge Function (updates participant row server-side)
-    supabase.functions.invoke('fetch-roblox-profile', {
+    supabase.functions.invoke('Robloxuserinfo', {
       body: { username: formData.robloxUsername, participant_id: data.id }
     }).then(({ error: fnErr }) => {
       if (fnErr) console.warn('Roblox profile fetch failed (optional):', fnErr);
