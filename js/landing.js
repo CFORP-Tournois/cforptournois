@@ -149,8 +149,10 @@
         </div>
         
         ${tournament.status === 'completed' ? `
-          <a href="results.html?tournament=${encodeURIComponent(tournament.tournament_type)}" class="btn" style="width: 100%; margin-top: 1rem; background: linear-gradient(135deg, #6ab04c 0%, #5a9a3d 100%); color: white;">
-            ✓ <span data-i18n="landing.tournamentCompleted">Tournoi terminé</span> - <span data-i18n="landing.viewResults">Voir les résultats</span>
+          <a href="results.html?tournament=${encodeURIComponent(tournament.tournament_type)}" class="btn" style="width: 100%; margin-top: 1rem; background: linear-gradient(135deg, #6ab04c 0%, #5a9a3d 100%); color: white; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <span>✓ <span data-i18n="landing.tournamentCompleted">Tournoi terminé</span></span>
+            <span style="flex-shrink: 0;">-</span>
+            <span data-i18n="landing.viewResults">Voir les résultats</span>
           </a>
         ` : tournament.status === 'in-progress' ? `
           <div style="margin-top: 1rem; padding: 1rem; background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%); border-radius: 8px; text-align: center;">
