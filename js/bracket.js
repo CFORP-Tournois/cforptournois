@@ -15,6 +15,12 @@
   document.addEventListener('DOMContentLoaded', initBracketPage);
 
   async function initBracketPage() {
+    // Single change listener for round dropdown (per-tournament options set in setupRoundFilter)
+    document.getElementById('roundFilter')?.addEventListener('change', function(e) {
+      currentRoundFilter = e.target.value;
+      displayLeaderboard(currentParticipants, currentMatches, currentRoundFilter);
+    });
+
     // Load tournaments first
     await loadTournaments();
     
@@ -244,14 +250,16 @@
       // Store matches globally
       currentMatches = matches || [];
 
-      // Calculate leaderboard if we have results
+      // Calculate leaderboard if we have results (round dropdown is per-tournament)
       if (matches && matches.length > 0) {
         console.log('✅ Displaying leaderboard with', matches.length, 'matches');
+        currentRoundFilter = 'overall';
         setupRoundFilter(matches);
         displayLeaderboard(participants, matches, 'overall');
       } else {
-        // No results yet, show participant list
+        // No results yet: hide round dropdown and show participant list only
         console.log('ℹ️ No matches found - showing participant list');
+        hideRoundFilter();
         displayParticipants(participants);
       }
       
@@ -434,21 +442,28 @@
     `;
   }
   
-  function setupRoundFilter(matches) {
-    // Get unique rounds
-    const rounds = [...new Set(matches.map(m => m.round_number))].sort((a, b) => a - b);
-    
+  function hideRoundFilter() {
     const filterContainer = document.getElementById('roundFilterContainer');
     const filterSelect = document.getElementById('roundFilter');
-    
-    if (!filterSelect) return;
-    
-    // Get current language for translations
+    if (!filterContainer || !filterSelect) return;
+    currentRoundFilter = 'overall';
+    const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
+    const overallText = translations[currentLang].bracket.overallStandings;
+    filterSelect.innerHTML = `<option value="overall">${overallText}</option>`;
+    filterContainer.classList.add('hidden');
+  }
+
+  function setupRoundFilter(matches) {
+    // Rounds for this tournament only (dropdown is per-tournament)
+    const rounds = [...new Set(matches.map(m => m.round_number))].sort((a, b) => a - b);
+    const filterContainer = document.getElementById('roundFilterContainer');
+    const filterSelect = document.getElementById('roundFilter');
+    if (!filterSelect || !filterContainer) return;
+
     const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
     const roundText = translations[currentLang].bracket.round;
     const overallText = translations[currentLang].bracket.overallStandings;
-    
-    // Populate dropdown
+
     filterSelect.innerHTML = `<option value="overall">${overallText}</option>`;
     rounds.forEach(round => {
       const option = document.createElement('option');
@@ -456,15 +471,8 @@
       option.textContent = `${roundText} ${round}`;
       filterSelect.appendChild(option);
     });
-    
-    // Show the filter
+    filterSelect.value = 'overall';
     filterContainer.classList.remove('hidden');
-    
-    // Add event listener
-    filterSelect.addEventListener('change', (e) => {
-      currentRoundFilter = e.target.value;
-      displayLeaderboard(currentParticipants, currentMatches, currentRoundFilter);
-    });
   }
 
   function displayLeaderboard(participants, matches, roundFilter = 'overall') {
