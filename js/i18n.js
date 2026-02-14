@@ -98,8 +98,8 @@ const translations = {
       subtitle: "Rejoignez la compétition!",
       
       // Form Fields
-      usernameLabel: "Nom d'utilisateur Roblox",
-      usernamePlaceholder: "Entrez votre nom d'utilisateur Roblox",
+      usernameLabel: "Nom d'utilisateur",
+      usernamePlaceholder: "Entrez votre nom d'utilisateur",
       usernameHelp: "Assurez-vous que votre nom d'utilisateur est exact",
       
       tournamentLabel: "Sélectionnez un tournoi",
@@ -115,8 +115,8 @@ const translations = {
       
       // Validation Messages
       errorRequired: "Ce champ est obligatoire",
-      errorInvalidUsername: "Nom d'utilisateur Roblox invalide",
-      errorUserNotFound: "Nom d'utilisateur Roblox introuvable. Vérifiez l'orthographe!",
+      errorInvalidUsername: "Nom d'utilisateur invalide",
+      errorUserNotFound: "Nom d'utilisateur introuvable. Vérifiez l'orthographe!",
       errorAlreadyRegistered: "Vous êtes déjà inscrit à ce tournoi",
       errorSelectTournament: "Veuillez sélectionner un tournoi",
       errorAgeConfirm: "Vous devez confirmer votre âge",
@@ -396,8 +396,8 @@ const translations = {
       subtitle: "Join the competition!",
       
       // Form Fields
-      usernameLabel: "Roblox Username",
-      usernamePlaceholder: "Enter your Roblox username",
+      usernameLabel: "Username",
+      usernamePlaceholder: "Enter your username",
       usernameHelp: "Make sure your username is correct",
       
       tournamentLabel: "Select a tournament",
@@ -436,7 +436,7 @@ const translations = {
       
       // Privacy Notice
       privacyTitle: "Privacy",
-      privacyText: "We only collect your Roblox username (public information). No personal data is required."
+      privacyText: "We only collect your username (public information). No personal data is required."
     },
 
     // Bracket/Live View

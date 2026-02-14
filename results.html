@@ -219,7 +219,7 @@
         const { data, error } = await supabase
           .from('tournaments')
           .select('*')
-          .in('status', ['published', 'in-progress', 'completed'])  // Show completed tournaments in results
+          .eq('status', 'completed')
           .order('display_order', { ascending: true });
         
         if (error) {
@@ -233,6 +233,9 @@
           renderTournamentTabs();
           currentTournament = tournaments[0].tournament_type;
           loadResults(currentTournament);
+        } else {
+          document.getElementById('loadingState').classList.add('hidden');
+          showNoResults();
         }
       } catch (error) {
         console.error('Error:', error);
@@ -524,11 +527,17 @@
       // Podium
       const first = leaderboard[0], second = leaderboard[1], third = leaderboard[2];
       document.getElementById('first-username').textContent = first?.username ?? '—';
-      document.getElementById('first-points').textContent = first ? (first.points ? (window.i18n?.t?.('results.winner') || 'Winner') : '—') : '— points';
+      const firstPointsEl = document.getElementById('first-points');
+      if (first && first.points) {
+        firstPointsEl.innerHTML = '<span data-i18n="results.winner">Winner</span>';
+      } else {
+        firstPointsEl.textContent = first ? '—' : '— points';
+      }
       document.getElementById('second-username').textContent = second?.username ?? '—';
       document.getElementById('second-points').textContent = second ? '—' : '— points';
       document.getElementById('third-username').textContent = third?.username ?? '—';
       document.getElementById('third-points').textContent = third ? '—' : '— points';
+      if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
 
       // Full standings table (bracket order; overwritten below by scoreboard when we have participants)
       const tbody = document.getElementById('standingsTableBody');
@@ -803,7 +812,7 @@
   <style>
     .tournament-tab {
       transition: all 0.25s ease;
-      opacity: 0.85;
+      opacity: 0.6;
     }
     
     .tournament-tab.active {
