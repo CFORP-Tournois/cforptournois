@@ -353,13 +353,11 @@
       const finalMatch = isLastRound ? roundMatches.find(m => m.match_number === 1) : null;
 
       if (isLastRound && (thirdPlaceMatch || finalMatch)) {
-        const half = Math.max(1, Math.floor(slotCount / 2));
-        const finalSpan = Math.max(1, Math.floor(slotCount / 4));
-        const thirdSpan = Math.max(1, Math.floor(slotCount / 4));
-        const finalRowStart = Math.max(1, half - finalSpan);
-        const thirdRowStart = half + 1;
+        // 3rd place and Final both sit in the middle (between the two semis), same vertical position
+        const span = Math.min(2, Math.max(1, Math.floor(slotCount / 2)));
+        const rowStart = Math.ceil((slotCount - span) / 2) + 1;
+        const gridStyle = `grid-row: ${rowStart} / span ${span};`;
         if (thirdPlaceMatch) {
-          const gridStyle = `grid-row: ${thirdRowStart} / span ${thirdSpan};`;
           html += `
         <div class="bracket-round bracket-round-third">
           <div class="bracket-round-title bracket-round-title-third" data-i18n="bracket.thirdPlace">3rd Place</div>
@@ -369,7 +367,6 @@
         </div>`;
         }
         if (finalMatch) {
-          const gridStyle = `grid-row: ${finalRowStart} / span ${finalSpan};`;
           const roundKey = getBracketRoundNameKey(parseInt(roundNum), totalRounds, roundMatches);
           const roundName = getBracketRoundName(parseInt(roundNum), totalRounds, roundMatches);
           const roundTitleHtml = roundKey === 'bracket.round'
