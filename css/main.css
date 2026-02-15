@@ -614,10 +614,10 @@ a:focus-visible {
   box-sizing: border-box;
   overflow: hidden;
 }
-/* Participant (name) column: clip so it never overlaps Points/Status; ellipsis for long names */
+/* Participant (name) column: wide enough for ~20 chars + avatar; clip/ellipsis only if longer */
 .table th:nth-child(2),
 .table td:nth-child(2) {
-  min-width: 200px;
+  min-width: 260px;
   overflow: hidden;
 }
 .table td:nth-child(2) .participant-cell-inner {
@@ -647,7 +647,7 @@ a:focus-visible {
   }
   .table th:nth-child(2),
   .table td:nth-child(2) {
-    min-width: 220px;
+    min-width: 280px;
   }
   .table th:nth-child(3),
   .table td:nth-child(3) {
@@ -657,14 +657,14 @@ a:focus-visible {
   .table td:nth-child(4) {
     min-width: 130px;
   }
-  /* Bracket page leaderboard: participant column wide for full names */
+  /* Bracket page leaderboard: participant column fits ~20 char names */
   .table.leaderboard-table th:nth-child(2),
   .table.leaderboard-table td:nth-child(2) {
-    min-width: 220px;
+    min-width: 280px;
   }
-  /* Results page Full Standings: force horizontal scroll so columns don't overlap */
+  /* Results page Full Standings: horizontal scroll so columns don't overlap */
   .table.standings-table {
-    min-width: 640px;
+    min-width: 720px;
   }
 }
 
