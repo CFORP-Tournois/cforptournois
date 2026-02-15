@@ -302,7 +302,12 @@
       }
       currentParticipants = list;
       displayParticipantsTable(currentParticipants);
-      
+      const recalcBtn = document.getElementById('recalculateGroupsBtn');
+      if (recalcBtn) {
+        const tid = document.getElementById('filterTournament').value;
+        const t = tid && tid !== 'all' ? adminTournaments.find(x => x.id === tid) : null;
+        recalcBtn.style.display = t && t.max_participants_per_group != null ? '' : 'none';
+      }
     } catch (error) {
       console.error('Error:', error);
     }
@@ -435,6 +440,21 @@
       await loadExistingResults();
     });
     document.getElementById('filterTournament').addEventListener('change', loadParticipants);
+    const recalcGroupsBtn = document.getElementById('recalculateGroupsBtn');
+    if (recalcGroupsBtn) {
+      recalcGroupsBtn.addEventListener('click', async () => {
+        const tid = document.getElementById('filterTournament').value;
+        if (!tid || tid === 'all') return;
+        recalcGroupsBtn.disabled = true;
+        try {
+          const { error } = await window.supabaseConfig.supabase.functions.invoke('auto-split-groups', { body: { tournament_id: tid } });
+          if (error) console.warn('Recalculate groups:', error);
+          await loadParticipants();
+        } finally {
+          recalcGroupsBtn.disabled = false;
+        }
+      });
+    }
     
     // Existing results management
     document.getElementById('resultsTournament').addEventListener('change', loadExistingResults);

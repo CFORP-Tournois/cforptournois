@@ -365,8 +365,11 @@
       throw new Error('Registration error: ' + error.message);
     }
 
-    // Auto-split groups when tournament has max_participants_per_group (e.g. 36 → 40 signups = 2 groups of 20)
-    runAutoSplitForTournament(formData.tournamentId).catch(err => console.warn('Auto-split after signup:', err));
+    // Auto-split groups (server-side so updates succeed; client-side updates may be blocked by RLS)
+    const supabase = window.supabaseConfig.supabase;
+    supabase.functions.invoke('auto-split-groups', { body: { tournament_id: formData.tournamentId } })
+      .then(({ error }) => { if (error) console.warn('Auto-split after signup:', error); })
+      .catch(err => console.warn('Auto-split after signup:', err));
 
     // Fetch Roblox display name + avatar only when this tournament's platform is Roblox
     if (formData.gamePlatform === 'roblox') {
