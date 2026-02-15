@@ -624,6 +624,15 @@ a:focus-visible {
   .table td:nth-child(2) {
     min-width: 120px;
   }
+  /* Bracket page leaderboard: ensure participant column stays visible with horizontal scroll */
+  .table.leaderboard-table th:nth-child(2),
+  .table.leaderboard-table td:nth-child(2) {
+    min-width: 140px;
+  }
+  /* Results page Full Standings: force horizontal scroll so participant names stay visible */
+  .table.standings-table {
+    min-width: 420px;
+  }
 }
 
 /* Inner wrapper for participant cells: flex must be on a div inside td, not on td, so row height stays correct */

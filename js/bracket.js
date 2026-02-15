@@ -612,8 +612,8 @@
     // Generate leaderboard table
     const participantsList = document.getElementById('participantsList');
     participantsList.innerHTML = `
-      <div style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
-        <table class="table" style="margin: 0;">
+      <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow-x: auto; overflow-y: visible;">
+        <table class="table leaderboard-table" style="margin: 0; min-width: 480px;">
           <thead>
             <tr>
               <th style="width: 100px; min-width: 100px; text-align: center;"><span data-i18n="bracket.rank">Rang</span></th>
