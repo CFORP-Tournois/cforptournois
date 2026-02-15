@@ -971,6 +971,66 @@ a:focus-visible {
   }
 }
 
+/* Landscape / short viewport: keep header minimal so content has room */
+@media (max-height: 500px) {
+  .header {
+    padding: 0.25rem 0;
+  }
+  
+  .header-container {
+    padding: 0 var(--spacing-sm);
+    gap: var(--spacing-sm);
+    flex-wrap: nowrap;
+  }
+  
+  .logo-container {
+    gap: 0.35rem;
+  }
+  
+  .logo-img {
+    height: 32px;
+  }
+  
+  .logo-title {
+    font-size: 0.875rem;
+    line-height: 1.2;
+  }
+  
+  .logo-subtitle {
+    font-size: 0.55rem;
+    line-height: 1.2;
+  }
+  
+  .logo-text {
+    justify-content: center;
+  }
+  
+  .header-right {
+    width: auto;
+    margin-left: auto;
+    padding-top: 0;
+    border-top: none;
+    gap: var(--spacing-xs);
+  }
+  
+  .nav-menu {
+    flex-wrap: nowrap;
+    gap: var(--spacing-xs);
+  }
+  
+  .nav-link {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+  }
+  
+  .lang-toggle {
+    min-width: 36px;
+    min-height: 36px;
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+  }
+}
+
 /* ============================================
    ACCESSIBILITY ENHANCEMENTS
    ============================================ */
