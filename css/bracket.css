@@ -150,6 +150,40 @@
   min-width: 0;
 }
 
+/* Leaderboard: same row style for all, consistent rank column */
+.leaderboard-row-even {
+  background: #fafafa;
+}
+.leaderboard-row-odd {
+  background: #f0f4f2;
+}
+.leaderboard-rank-cell {
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #333;
+  vertical-align: middle;
+}
+.leaderboard-rank-inner {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+}
+.rank-tie-sup {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: #666;
+  margin-left: 2px;
+}
+
+/* Same frame for all avatars so placeholder and photo look consistent */
+.participant-cell .participant-avatar,
+.participant-avatar {
+  border: 2px solid rgba(0, 0, 0, 0.08);
+  box-sizing: border-box;
+}
+
 .bracket-player-inner {
   display: inline-flex;
   align-items: center;

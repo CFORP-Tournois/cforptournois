@@ -562,14 +562,15 @@
           </thead>
           <tbody>
             ${leaderboard.map((player, index) => {
-              const rankDisplay = player.isTied ? `T${player.rank}` : player.rank;
-              
               const medalEmoji = player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : player.rank === 3 ? '🥉' : '';
-              
+              const rankNum = player.rank;
+              const rankLabel = player.isTied ? `T${rankNum}` : String(rankNum);
+              const tieSup = player.isTied ? '<sup class="rank-tie-sup" data-i18n="bracket.tie">TIE</sup>' : '';
+              const rowClass = index % 2 === 0 ? 'leaderboard-row-even' : 'leaderboard-row-odd';
               return `
-                <tr style="${player.rank <= 3 ? 'background: linear-gradient(to right, ' + (player.rank === 1 ? '#FFD70020' : player.rank === 2 ? '#C0C0C020' : '#CD7F3220') + ', transparent);' : ''}">
-                  <td style="text-align: center; font-weight: 700; font-size: 1.25rem; color: ${player.rank === 1 ? '#FFD700' : player.rank === 2 ? '#C0C0C0' : player.rank === 3 ? '#CD7F32' : '#666'};">
-                    ${medalEmoji} ${rankDisplay}${player.isTied ? '<sup style="font-size: 0.6rem; margin-left: 2px;" data-i18n="bracket.tie">TIE</sup>' : ''}
+                <tr class="${rowClass}">
+                  <td class="leaderboard-rank-cell">
+                    <span class="leaderboard-rank-inner">${medalEmoji} ${rankLabel}${tieSup}</span>
                   </td>
                   <td class="participant-cell" style="font-weight: 600; font-size: 1.125rem;">
                     ${player.avatarUrl ? `<img src="${escapeHtml(player.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />` : AVATAR_PLACEHOLDER}

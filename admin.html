@@ -229,16 +229,16 @@
               </p>
               <div id="existingResultsContent" class="hidden">
                 <p style="margin-bottom: 1rem; font-weight: 600;">Tournament: <span id="existingResultsTournamentName">—</span></p>
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-                  <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
-                    <label class="form-label" style="margin: 0;">Filter by Round:</label>
+                <div class="existing-results-toolbar">
+                  <div class="existing-results-toolbar-group">
+                    <label class="form-label existing-results-label" for="filterRound">Filter by Round</label>
                     <select id="filterRound" class="form-select" style="width: auto;">
-                      <option value="all">All Rounds</option>
+                      <option value="">Select round</option>
                     </select>
-                    <div class="form-group" style="margin: 0;">
-                      <label class="form-label" for="existingResultsSearch" style="margin: 0;">Search participants</label>
-                      <input type="text" id="existingResultsSearch" class="form-input" placeholder="e.g. BLA Run 22 (matches BlaseRunner22)" style="max-width: 280px;">
-                    </div>
+                  </div>
+                  <div class="existing-results-toolbar-group">
+                    <label class="form-label existing-results-label" for="existingResultsSearch">Search participants</label>
+                    <input type="text" id="existingResultsSearch" class="form-input" placeholder="e.g. BLA Run 22 (matches BlaseRunner22)" style="width: 220px;">
                   </div>
                   <button class="btn btn-secondary" id="refreshExistingBtn">🔄 Refresh</button>
                 </div>
@@ -650,6 +650,66 @@
       font-weight: 700;
       color: #6ab04c;
       font-size: 1.125rem;
+    }
+    
+    /* Edit Existing Results: toolbar alignment (round + search on one line) */
+    .existing-results-toolbar {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      margin-bottom: 1.5rem;
+    }
+    .existing-results-toolbar-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .existing-results-label {
+      margin: 0;
+      white-space: nowrap;
+    }
+    .existing-results-toolbar .form-select,
+    .existing-results-toolbar .form-input {
+      margin: 0;
+    }
+    
+    /* Edit Existing Results: same avatar/participant look and consistent Actions column */
+    #existingResultsBody .participant-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+    #existingResultsBody .participant-avatar {
+      width: 28px;
+      height: 28px;
+      min-width: 28px;
+      min-height: 28px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      border: 2px solid rgba(0, 0, 0, 0.08);
+      box-sizing: border-box;
+    }
+    #existingResultsBody .participant-avatar-placeholder.participant-avatar {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      background: #f0f4f2;
+    }
+    #existingResultsBody .player-name {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    #existingResultsBody .existing-results-actions-cell {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      min-height: 32px;
     }
     
     /* Modal Styles */

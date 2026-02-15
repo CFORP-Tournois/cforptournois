@@ -660,7 +660,7 @@
         if (noResultsEl) noResultsEl.classList.remove('hidden');
         if (tableBody) tableBody.innerHTML = '';
         const filterRound = document.getElementById('filterRound');
-        if (filterRound) filterRound.innerHTML = '<option value="all">All Rounds</option>';
+        if (filterRound) filterRound.innerHTML = '<option value="">Select round</option>';
         return;
       }
 
@@ -670,10 +670,12 @@
       const rounds = [...new Set(matches.map(m => m.round_number))].sort((a, b) => a - b);
       const filterRound = document.getElementById('filterRound');
       const currentFilter = filterRound.value;
-      filterRound.innerHTML = '<option value="all">All Rounds</option>' +
+      filterRound.innerHTML = '<option value="">Select round</option>' +
         rounds.map(r => `<option value="${r}">Round ${r}</option>`).join('');
       if (rounds.includes(Number(currentFilter))) {
         filterRound.value = currentFilter;
+      } else {
+        filterRound.value = '';
       }
 
       displayExistingResults(matches);
@@ -691,9 +693,9 @@
 
     const displayName = (p) => (p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username;
 
-    if (filterRound !== 'all' && existingResultsParticipants.length > 0) {
-      // Single round: show ALL participants; those with a result get placement/Update/Delete, others get Add
-      const roundNum = parseInt(filterRound, 10);
+    const roundNum = filterRound !== '' ? parseInt(filterRound, 10) : NaN;
+    if (!isNaN(roundNum) && existingResultsParticipants.length > 0) {
+      // Round selected: show ALL participants; those with a result get placement/Update/Delete, others get Add
       const match = matches.find(m => m.round_number === roundNum);
       const resultByUsername = {};
       if (match && match.scores) {
@@ -732,56 +734,17 @@
             >
           </td>
           <td style="text-align: center; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">${pointsVal}</td>
-          <td style="text-align: center;">
+          <td class="existing-results-actions-cell" style="text-align: center;">
             ${hasResult
-              ? `<button type="button" class="btn btn-sm btn-secondary btn-existing-update" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;">💾 Update</button>
-                 <button type="button" class="btn btn-sm btn-outline btn-existing-delete" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #40916c; border-color: #40916c;">🗑️ Delete</button>`
+              ? `<button type="button" class="btn btn-sm btn-secondary btn-existing-update" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">💾 Update</button><button type="button" class="btn btn-sm btn-outline btn-existing-delete" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #40916c; border-color: #40916c;">🗑️ Delete</button>`
               : `<button type="button" class="btn btn-sm btn-primary btn-existing-add" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">➕ Add</button>`
             }
           </td>
         `;
         tbody.appendChild(row);
       });
-    } else {
-      // All rounds: show only rows that have results (legacy behavior)
-      const results = [];
-      matches.forEach(match => {
-        if (match.scores) {
-          Object.entries(match.scores).forEach(([username, scoreData]) => {
-            results.push({
-              matchId: match.id,
-              round: match.round_number,
-              username: username,
-              placement: scoreData.placement,
-              points: scoreData.points
-            });
-          });
-        }
-      });
-      const filteredResults = filterRound === 'all' ? results : results.filter(r => r.round.toString() === filterRound);
-      filteredResults.sort((a, b) => {
-        if (a.round !== b.round) return a.round - b.round;
-        return a.placement - b.placement;
-      });
-      filteredResults.forEach((result) => {
-        const row = document.createElement('tr');
-        row.dataset.search = (result.username || '').toLowerCase();
-        row.innerHTML = `
-          <td style="text-align: center; font-weight: 600;">${result.round}</td>
-          <td style="font-weight: 600;">${escapeHtml(result.username)}</td>
-          <td style="text-align: center;">
-            <input type="number" class="form-input existing-placement-input" style="width: 80px; text-align: center; padding: 0.25rem;" value="${result.placement}" min="1"
-              data-match-id="${result.matchId}" data-username="${escapeHtml(result.username)}" data-participant-id="" data-original-placement="${result.placement}" data-has-result="true">
-          </td>
-          <td style="text-align: center; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">${result.points}</td>
-          <td style="text-align: center;">
-            <button type="button" class="btn btn-sm btn-secondary btn-existing-update" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;">💾 Update</button>
-            <button type="button" class="btn btn-sm btn-outline btn-existing-delete" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #40916c; border-color: #40916c;">🗑️ Delete</button>
-          </td>
-        `;
-        tbody.appendChild(row);
-      });
     }
+    // When no round selected, tbody stays empty (already cleared above)
 
     // Search filter: any space-separated tokens must all appear in the participant name
     if (searchInput) {
@@ -833,7 +796,7 @@
     const tournament = tournamentSelect ? tournamentSelect.value : '';
     const round = filterRound ? filterRound.value : '';
     if (!tournament || !round || round === 'all') {
-      alert('Select a tournament and a specific round (not "All Rounds") to add a result.');
+      alert('Select a tournament and a round to add a result.');
       return;
     }
     const roundNum = parseInt(round, 10);
