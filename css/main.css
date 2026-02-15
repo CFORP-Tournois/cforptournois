@@ -597,8 +597,13 @@ a:focus-visible {
 }
 
 .table td {
-  padding: var(--spacing-md);
+  padding: 12px var(--spacing-md);
   border-bottom: 1px solid #E0E0E0;
+  vertical-align: middle;
+}
+.table tbody td {
+  min-height: 48px;
+  box-sizing: border-box;
 }
 
 .table tr:last-child td {
