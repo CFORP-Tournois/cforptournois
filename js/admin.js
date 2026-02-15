@@ -28,6 +28,12 @@
   let existingResultsMatches = []; // Store matches for "Existing Results" so round filter doesn't reload and reset
   let existingResultsParticipants = []; // All participants for selected tournament (for Edit Existing - show all when round selected)
 
+  // Inline styles so participant rows look the same everywhere (no reliance on CSS load order)
+  const ROW_AVATAR_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:block;flex-shrink:0';
+  const ROW_PLACEHOLDER_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;background:#e8ece9;flex-shrink:0';
+  const ROW_CELL_STYLE = 'vertical-align:middle;padding:12px 16px;min-height:48px;display:flex;align-items:center;gap:8px;';
+  const ROW_NAME_STYLE = 'font-size:1rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0;';
+
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', init);
 
@@ -264,11 +270,11 @@
       
       return `
       <tr>
-        <td>${index + 1}</td>
-        <td class="participant-cell" style="font-weight: 600; color: #28724f;">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" class="participant-avatar" loading="lazy" />` : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>'}<span class="player-name">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></td>
-        <td>${escapeHtml(tournamentName)}</td>
-        <td>${formatDate(p.signup_timestamp)}</td>
-        <td>
+        <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${index + 1}</td>
+        <td style="${ROW_CELL_STYLE} color: #28724f;">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></td>
+        <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${escapeHtml(tournamentName)}</td>
+        <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${formatDate(p.signup_timestamp)}</td>
+        <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
           <button class="btn btn-accent" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;" onclick="deleteParticipant('${p.id}')">
             🗑️ Delete
           </button>
@@ -430,9 +436,9 @@
       const searchable = ((displayName(p) + ' ' + (p.roblox_username || '')).trim()).toLowerCase();
       return `
       <tr data-search="${escapeHtml(searchable)}">
-        <td>${index + 1}</td>
-        <td class="participant-cell" style="font-weight: 600;">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" class="participant-avatar" loading="lazy" />` : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>'}<span class="player-name">${escapeHtml(displayName(p))}</span></td>
-        <td>
+        <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${index + 1}</td>
+        <td style="${ROW_CELL_STYLE}">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml(displayName(p))}</span></td>
+        <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
           <input 
             type="number" 
             class="placement-input" 
@@ -443,7 +449,7 @@
             max="${participants.length}"
           >
         </td>
-        <td>
+        <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
           <span class="points-display" data-points-for="${p.id}">-</span>
         </td>
       </tr>
@@ -712,14 +718,14 @@
         const placementVal = hasResult ? result.placement : '';
         const pointsVal = hasResult ? result.points : '—';
         const avatarHtml = p.roblox_avatar_url
-          ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" class="participant-avatar" loading="lazy" />`
-          : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>';
+          ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
+          : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`;
         const row = document.createElement('tr');
         row.dataset.search = searchable;
         row.innerHTML = `
-          <td style="text-align: center; font-weight: 600;">${roundNum}</td>
-          <td class="participant-cell" style="font-weight: 600;">${avatarHtml}<span class="player-name">${escapeHtml(name)}</span></td>
-          <td style="text-align: center;">
+          <td style="text-align: center; font-weight: 600; vertical-align: middle; padding: 12px 16px; min-height: 48px;">${roundNum}</td>
+          <td style="${ROW_CELL_STYLE}">${avatarHtml}<span style="${ROW_NAME_STYLE}">${escapeHtml(name)}</span></td>
+          <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px;">
             <input 
               type="number" 
               class="form-input existing-placement-input" 
@@ -733,8 +739,8 @@
               data-has-result="${hasResult}"
             >
           </td>
-          <td style="text-align: center; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">${pointsVal}</td>
-          <td class="existing-results-actions-cell" style="text-align: center;">
+          <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">${pointsVal}</td>
+          <td class="existing-results-actions-cell" style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px;">
             ${hasResult
               ? `<button type="button" class="btn btn-sm btn-secondary btn-existing-update" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">💾 Update</button><button type="button" class="btn btn-sm btn-outline btn-existing-delete" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #40916c; border-color: #40916c;">🗑️ Delete</button>`
               : `<button type="button" class="btn btn-sm btn-primary btn-existing-add" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">➕ Add</button>`

@@ -408,14 +408,18 @@
     return { name, avatarUrl };
   }
 
-  const AVATAR_PLACEHOLDER = '<div class="participant-avatar participant-avatar-placeholder">🎮</div>';
+  const ROW_AVATAR_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:block;flex-shrink:0';
+  const ROW_PLACEHOLDER_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;background:#e8ece9;flex-shrink:0';
+  const ROW_CELL_STYLE = 'vertical-align:middle;padding:12px 16px;min-height:48px;display:flex;align-items:center;gap:8px;';
+  const ROW_NAME_STYLE = 'font-size:1rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0;';
+  const AVATAR_PLACEHOLDER = `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`;
 
   function renderParticipantWithAvatar(display, fallback) {
     const name = display.name || fallback || 'TBD';
     const avatar = display.avatarUrl
-      ? `<img src="${escapeHtml(display.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />`
+      ? `<img src="${escapeHtml(display.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
       : AVATAR_PLACEHOLDER;
-    return `${avatar}<span class="player-name">${escapeHtml(name)}</span>`;
+    return `${avatar}<span style="${ROW_NAME_STYLE}">${escapeHtml(name)}</span>`;
   }
 
   function renderBracketMatch(match) {
@@ -570,17 +574,17 @@
               const rankColor = player.rank === 1 ? '#b8860b' : player.rank === 2 ? '#6c757d' : player.rank === 3 ? '#cd7f32' : '#333';
               return `
                 <tr style="${rowBg}">
-                  <td class="leaderboard-rank-cell" style="color: ${rankColor}; font-weight: 700; font-size: 1.125rem;">
+                  <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px; color: ${rankColor}; font-weight: 700; font-size: 1.125rem;">
                     ${medalEmoji} ${rankLabel}${tieSup}
                   </td>
-                  <td class="participant-cell">
-                    ${player.avatarUrl ? `<img src="${escapeHtml(player.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />` : AVATAR_PLACEHOLDER}
-                    <span class="player-name">${escapeHtml(player.username)}</span>
+                  <td style="${ROW_CELL_STYLE}">
+                    ${player.avatarUrl ? `<img src="${escapeHtml(player.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : AVATAR_PLACEHOLDER}
+                    <span style="${ROW_NAME_STYLE}">${escapeHtml(player.username)}</span>
                   </td>
-                  <td style="text-align: center; color: #666;">
+                  <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px; color: #666;">
                     ${player.roundsPlayed}
                   </td>
-                  <td style="text-align: center; font-weight: 700; font-size: 1.25rem; color: #6ab04c;">
+                  <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px; font-weight: 700; font-size: 1.25rem; color: #6ab04c;">
                     ${player.totalPoints}
                   </td>
                 </tr>
