@@ -161,8 +161,8 @@
           </div>
 
           <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-            <button type="button" class="btn btn-primary" id="btnEnterNewResults">Enter New Results</button>
-            <button type="button" class="btn btn-secondary" id="btnEditExistingResults">Edit Existing Results</button>
+            <button type="button" class="btn btn-primary results-mode-btn active" id="btnEnterNewResults">Enter New Results</button>
+            <button type="button" class="btn btn-secondary results-mode-btn" id="btnEditExistingResults">Edit Existing Results</button>
           </div>
 
           <!-- ENTER NEW RESULTS (round + load + entry form) -->
@@ -583,6 +583,22 @@
     .admin-tab.active {
       color: #28724f;
       border-bottom-color: #40916c;
+    }
+    
+    /* Enter Results sub-buttons: selected = black ring, unselected = pale */
+    .results-mode-btn {
+      transition: all 0.2s ease;
+    }
+    .results-mode-btn:not(.active) {
+      opacity: 0.65;
+      background: #e8e8e8 !important;
+      color: #666 !important;
+      border-color: #ddd !important;
+    }
+    .results-mode-btn.active {
+      outline: 2px solid #222;
+      outline-offset: 2px;
+      opacity: 1;
     }
     
     .admin-tab-content {
