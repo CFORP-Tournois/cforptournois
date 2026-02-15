@@ -338,6 +338,7 @@
     const totalRounds = Object.keys(rounds).length;
     const maxRoundNum = Math.max(...Object.keys(rounds).map(Number));
     const roundNums = Object.keys(rounds).sort((a, b) => parseInt(a) - parseInt(b));
+    const slotCount = roundNums.length > 0 ? (rounds[roundNums[0]].length || 1) : 1;
 
     let html = `
       <h2 style="margin-bottom: 1.5rem; text-align: center;" data-i18n="bracket.bracketTitle">Bracket d'élimination</h2>
@@ -352,14 +353,20 @@
       const finalMatch = isLastRound ? roundMatches.find(m => m.match_number === 1) : null;
 
       if (isLastRound && (thirdPlaceMatch || finalMatch)) {
+        const half = Math.max(1, Math.floor(slotCount / 2));
         if (thirdPlaceMatch) {
+          const gridStyle = `grid-row: ${half + 1} / span ${slotCount - half};`;
           html += `
         <div class="bracket-round bracket-round-third">
           <div class="bracket-round-title bracket-round-title-third" data-i18n="bracket.thirdPlace">3rd Place</div>
-          ${renderBracketMatch(thirdPlaceMatch, true, false)}
+          <div class="bracket-round-matches" style="display:grid;grid-template-rows:repeat(${slotCount},1fr);gap:1rem;flex:1;min-height:0;">
+            ${renderBracketMatch(thirdPlaceMatch, true, false, gridStyle)}
+          </div>
         </div>`;
         }
         if (finalMatch) {
+          const half = Math.max(1, Math.floor(slotCount / 2));
+          const gridStyle = `grid-row: 1 / span ${half};`;
           const roundKey = getBracketRoundNameKey(parseInt(roundNum), totalRounds, roundMatches);
           const roundName = getBracketRoundName(parseInt(roundNum), totalRounds, roundMatches);
           const roundTitleHtml = roundKey === 'bracket.round'
@@ -368,7 +375,9 @@
           html += `
         <div class="bracket-round bracket-round-final">
           <div class="bracket-round-title bracket-round-title-final">${roundTitleHtml}</div>
-          ${renderBracketMatch(finalMatch, false, true)}
+          <div class="bracket-round-matches" style="display:grid;grid-template-rows:repeat(${slotCount},1fr);gap:1rem;flex:1;min-height:0;">
+            ${renderBracketMatch(finalMatch, false, true, gridStyle)}
+          </div>
         </div>`;
         }
         return;
@@ -380,16 +389,20 @@
         ? escapeHtml(roundName)
         : `<span data-i18n="${roundKey}">${escapeHtml(roundName)}</span>`;
 
+      const span = Math.max(1, Math.floor(slotCount / roundMatches.length));
       html += `
         <div class="bracket-round">
           <div class="bracket-round-title">${roundTitleHtml}</div>
+          <div class="bracket-round-matches" style="display:grid;grid-template-rows:repeat(${slotCount},1fr);gap:1rem;flex:1;min-height:0;">
       `;
 
-      roundMatches.forEach(match => {
-        html += renderBracketMatch(match, false, false);
+      roundMatches.forEach((match, matchIndex) => {
+        const rowStart = matchIndex * span + 1;
+        const gridStyle = `grid-row: ${rowStart} / span ${span};`;
+        html += renderBracketMatch(match, false, false, gridStyle);
       });
 
-      html += `</div>`;
+      html += `</div></div>`;
     });
 
     html += `
@@ -441,15 +454,17 @@
   const ROW_NAME_STYLE = 'font-size:1rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0;';
   const AVATAR_PLACEHOLDER = `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`;
 
-  function renderParticipantWithAvatar(display, fallback) {
-    const name = display.name || fallback || 'TBD';
+  function renderParticipantWithAvatar(display, fallback, i18nKey) {
+    const hasName = display.name;
+    const name = hasName ? display.name : (fallback || 'TBD');
     const avatar = display.avatarUrl
       ? `<img width="32" height="32" src="${escapeHtml(display.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
       : AVATAR_PLACEHOLDER;
-    return `${avatar}<span style="${ROW_NAME_STYLE}">${escapeHtml(name)}</span>`;
+    const nameHtml = hasName ? escapeHtml(name) : (i18nKey ? `<span data-i18n="${i18nKey}">${escapeHtml(name)}</span>` : escapeHtml(name));
+    return `${avatar}<span style="${ROW_NAME_STYLE}">${nameHtml}</span>`;
   }
 
-  function renderBracketMatch(match, isThirdPlace, isFinal) {
+  function renderBracketMatch(match, isThirdPlace, isFinal, gridRowStyle) {
     const t = window.i18n && window.i18n.t ? window.i18n.t.bind(window.i18n) : (k) => k;
     const byeLabel = t('bracket.bye') || 'Bye';
     const tbdLabel = t('bracket.tbd') || 'TBD';
@@ -459,8 +474,12 @@
     const winner = getParticipantDisplay(match.winner);
     const winnerName = winner.name;
     const r = match.round_number != null ? match.round_number : 1;
-    const player1Name = p1.name || (match.player1 ? tbdLabel : emptySlotLabel(r));
-    const player2Name = p2.name || (match.player2 ? tbdLabel : emptySlotLabel(r));
+    const p1Fallback = match.player1 ? tbdLabel : emptySlotLabel(r);
+    const p2Fallback = match.player2 ? tbdLabel : emptySlotLabel(r);
+    const p1I18nKey = !match.player1 ? (r === 1 ? 'bracket.bye' : 'bracket.tbd') : (!p1.name ? 'bracket.tbd' : null);
+    const p2I18nKey = !match.player2 ? (r === 1 ? 'bracket.bye' : 'bracket.tbd') : (!p2.name ? 'bracket.tbd' : null);
+    const player1Name = p1.name || p1Fallback;
+    const player2Name = p2.name || p2Fallback;
 
     const isCompleted = match.match_status === 'completed' || match.winner_id;
     const thirdClass = isThirdPlace ? ' bracket-match-third-place' : '';
@@ -469,16 +488,17 @@
     if (isThirdPlace) badge = '<div class="bracket-match-badge bracket-match-badge-third" data-i18n="bracket.thirdPlace">3rd Place</div>';
     else if (isFinal) badge = '<div class="bracket-match-badge bracket-match-badge-final" data-i18n="bracket.finals">Finals</div>';
 
+    const gridAttr = gridRowStyle ? ` style="${gridRowStyle}"` : '';
     return `
-      <div class="bracket-match ${isCompleted ? 'completed' : ''}${thirdClass}${finalClass}">
+      <div class="bracket-match ${isCompleted ? 'completed' : ''}${thirdClass}${finalClass}"${gridAttr}>
         ${badge}
         <div class="bracket-player ${winnerName === player1Name ? 'winner' : winnerName ? 'loser' : ''}">
           ${match.player1_seed ? `<span class="player-seed">${match.player1_seed}</span>` : ''}
-          <span class="bracket-player-inner">${renderParticipantWithAvatar(p1, match.player1 ? tbdLabel : emptySlotLabel(r))}</span>
+          <span class="bracket-player-inner">${renderParticipantWithAvatar(p1, p1Fallback, p1I18nKey)}</span>
         </div>
         <div class="bracket-player ${winnerName === player2Name ? 'winner' : winnerName ? 'loser' : ''}">
           ${match.player2_seed ? `<span class="player-seed">${match.player2_seed}</span>` : ''}
-          <span class="bracket-player-inner">${renderParticipantWithAvatar(p2, match.player2 ? tbdLabel : emptySlotLabel(r))}</span>
+          <span class="bracket-player-inner">${renderParticipantWithAvatar(p2, p2Fallback, p2I18nKey)}</span>
         </div>
       </div>
     `;

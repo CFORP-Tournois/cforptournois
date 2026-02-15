@@ -805,12 +805,14 @@
   const ROW_AVATAR_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:block;flex-shrink:0';
   const ROW_PLACEHOLDER_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;background:#e8ece9;flex-shrink:0';
   const AVATAR_PLACEHOLDER = '<div style="' + ROW_PLACEHOLDER_STYLE + '">🎮</div>';
-  function renderParticipantWithAvatar(display, fallback) {
-    const name = display.name || fallback || 'TBD';
+  function renderParticipantWithAvatar(display, fallback, i18nKey) {
+    const hasName = display.name;
+    const name = hasName ? display.name : (fallback || 'TBD');
     const avatar = display.avatarUrl
       ? '<img width="32" height="32" src="' + escapeHtml(display.avatarUrl) + '" alt="" loading="lazy" style="' + ROW_AVATAR_STYLE + '" />'
       : AVATAR_PLACEHOLDER;
-    return avatar + '<span class="player-name">' + escapeHtml(name) + '</span>';
+    const nameHtml = hasName ? escapeHtml(name) : (i18nKey ? '<span data-i18n="' + i18nKey + '">' + escapeHtml(name) + '</span>' : escapeHtml(name));
+    return avatar + '<span class="player-name">' + nameHtml + '</span>';
   }
 
   function renderMatch(match, maxRoundNum) {
@@ -823,8 +825,12 @@
     const p2 = getParticipantDisplay(match.player2);
     const winner = getParticipantDisplay(match.winner);
     const winnerName = winner.name;
-    const player1Name = p1.name || (match.player1_id ? tbdLabel : emptySlotLabel);
-    const player2Name = p2.name || (match.player2_id ? tbdLabel : emptySlotLabel);
+    const p1Fallback = match.player1_id ? tbdLabel : emptySlotLabel;
+    const p2Fallback = match.player2_id ? tbdLabel : emptySlotLabel;
+    const p1I18nKey = !match.player1_id ? (r === 1 ? 'bracket.bye' : 'bracket.tbd') : (!p1.name ? 'bracket.tbd' : null);
+    const p2I18nKey = !match.player2_id ? (r === 1 ? 'bracket.bye' : 'bracket.tbd') : (!p2.name ? 'bracket.tbd' : null);
+    const player1Name = p1.name || p1Fallback;
+    const player2Name = p2.name || p2Fallback;
 
     const isCompleted = match.match_status === 'completed' || match.winner_id;
     const canSelect = match.player1_id && match.player2_id && !isCompleted;
@@ -842,7 +848,7 @@
         <div style="margin-bottom: 0.5rem;">
           <div class="bracket-player ${winnerName === player1Name ? 'winner' : winnerName ? 'loser' : ''}" style="padding: 0.5rem; border-radius: 4px; ${winnerName === player1Name ? 'background: #6ab04c20;' : ''}">
             ${match.player1_seed ? `<span style="background: #28724f; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem;">${match.player1_seed}</span>` : ''}
-            <span class="bracket-player-inner">${renderParticipantWithAvatar(p1, match.player1_id ? tbdLabel : emptySlotLabel)}</span>
+            <span class="bracket-player-inner">${renderParticipantWithAvatar(p1, p1Fallback, p1I18nKey)}</span>
             ${winnerName === player1Name ? ' ✓' : ''}
           </div>
         </div>
@@ -852,7 +858,7 @@
         <div style="margin-bottom: 0.5rem;">
           <div class="bracket-player ${winnerName === player2Name ? 'winner' : winnerName ? 'loser' : ''}" style="padding: 0.5rem; border-radius: 4px; ${winnerName === player2Name ? 'background: #6ab04c20;' : ''}">
             ${match.player2_seed ? `<span style="background: #28724f; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; margin-right: 0.5rem;">${match.player2_seed}</span>` : ''}
-            <span class="bracket-player-inner">${renderParticipantWithAvatar(p2, match.player2_id ? tbdLabel : emptySlotLabel)}</span>
+            <span class="bracket-player-inner">${renderParticipantWithAvatar(p2, p2Fallback, p2I18nKey)}</span>
             ${winnerName === player2Name ? ' ✓' : ''}
           </div>
         </div>

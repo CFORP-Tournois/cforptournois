@@ -12,6 +12,7 @@
 
 .bracket {
   display: flex;
+  align-items: stretch;
   gap: 3rem;
   min-width: fit-content;
   padding: 1rem;
@@ -20,8 +21,21 @@
 .bracket-round {
   display: flex;
   flex-direction: column;
-  justify-content: space-around;
   min-width: 200px;
+  min-height: 200px;
+}
+
+.bracket-round-matches {
+  display: grid;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+}
+
+.bracket-round-matches .bracket-match {
+  margin: 0;
+  min-height: 0;
+  align-self: center;
 }
 
 .bracket-round-title {
@@ -42,6 +56,10 @@
   overflow: hidden;
   border: 2px solid #e0e0e0;
   transition: all 0.3s ease;
+}
+
+.bracket-round-matches .bracket-match {
+  margin: 0;
 }
 
 .bracket-match:hover {
