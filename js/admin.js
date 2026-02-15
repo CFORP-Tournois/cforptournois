@@ -24,6 +24,7 @@
   let isAuthenticated = false;
   let currentParticipants = [];
   let adminTournaments = []; // Store tournaments for admin operations
+  let existingResultsMatches = []; // Store matches for "Existing Results" so round filter doesn't reload and reset
 
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', init);
@@ -326,9 +327,9 @@
     document.getElementById('resultsTournament').addEventListener('change', loadExistingResults);
     document.getElementById('refreshExistingBtn').addEventListener('click', loadExistingResults);
     document.getElementById('filterRound').addEventListener('change', () => {
-      const tournament = document.getElementById('resultsTournament').value;
-      if (tournament) {
-        loadExistingResults();
+      // Re-display only; do not reload (reload rebuilds dropdown and resets to "All")
+      if (existingResultsMatches.length > 0) {
+        displayExistingResults(existingResultsMatches);
       }
     });
   }
@@ -550,6 +551,7 @@
     
     if (!tournament) {
       document.getElementById('existingResultsContainer').classList.add('hidden');
+      existingResultsMatches = [];
       return;
     }
     
@@ -584,6 +586,7 @@
       
       if (!matches || matches.length === 0) {
         console.log('ℹ️ No results found for this tournament');
+        existingResultsMatches = [];
         document.getElementById('noExistingResults').classList.remove('hidden');
         document.getElementById('existingResultsBody').innerHTML = '';
         return;
@@ -591,11 +594,18 @@
       
       document.getElementById('noExistingResults').classList.add('hidden');
       
+      // Store so round filter change can re-render without reloading (keeps filter selection)
+      existingResultsMatches = matches;
+      
       // Populate round filter dropdown
       const rounds = [...new Set(matches.map(m => m.round_number))].sort((a, b) => a - b);
       const filterRound = document.getElementById('filterRound');
+      const currentFilter = filterRound.value; // preserve selection when refreshing
       filterRound.innerHTML = '<option value="all">All Rounds</option>' + 
         rounds.map(r => `<option value="${r}">Round ${r}</option>`).join('');
+      if (rounds.includes(Number(currentFilter))) {
+        filterRound.value = currentFilter;
+      }
       
       // Display results
       displayExistingResults(matches);
