@@ -133,8 +133,8 @@
         <div id="fullStandingsSection" style="margin-bottom: 3rem; text-align: center;">
           <h2 style="margin-bottom: 1.5rem;" data-i18n="results.fullStandings">Classement complet</h2>
           
-          <div class="table-container" style="display: inline-block; width: 100%; max-width: 800px;">
-            <table id="standingsTable" class="table standings-table">
+          <div class="table-container" style="display: inline-block; width: 100%; max-width: 800px; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            <table id="standingsTable" class="table standings-table leaderboard-table">
               <thead>
                 <tr>
                   <th data-i18n="bracket.rank">Rang</th>
@@ -422,18 +422,13 @@
         document.getElementById('third-points').textContent = `${leaderboard[2].totalPoints} points`;
       }
 
-      // Full standings: Rank, Participant, Total Points only (no Status for scoreboard-only)
+      // Full standings: same look as bracket page (medals, avatars, row colors)
       const standingsTable = document.getElementById('standingsTable');
       if (standingsTable) standingsTable.classList.add('scoreboard-only');
       const tbody = document.getElementById('standingsTableBody');
-      tbody.innerHTML = leaderboard.map((player, index) => `
-        <tr>
-          <td style="font-weight: 700;">${index + 1}</td>
-          <td style="font-weight: 600;">${escapeHtml(player.username)}</td>
-          <td style="font-weight: 700; color: #6ab04c;">${player.totalPoints}</td>
-          <td class="standings-status-col"></td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = leaderboard.map((player, index) =>
+        renderStandingsRow(index + 1, player.username, player.totalPoints, null, '')
+      ).join('');
     }
 
     async function loadAndDisplayBracketOnResults(tournament) {
@@ -601,16 +596,11 @@
       document.getElementById('third-points').textContent = third ? '—' : '— points';
       if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
 
-      // Full standings table (bracket order; overwritten below by scoreboard when we have participants)
+      // Full standings table (bracket order; same look as bracket page)
       const tbody = document.getElementById('standingsTableBody');
-      tbody.innerHTML = leaderboard.map((p, i) => `
-        <tr>
-          <td style="vertical-align:middle;padding:12px 16px;min-height:48px;font-weight: 700;">${i + 1}</td>
-          <td style="${ROW_CELL_STYLE}"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${p.avatarUrl ? `<img width="32" height="32" src="${escapeHtml(p.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : AVATAR_PLACEHOLDER}<span style="${ROW_NAME_STYLE}">${escapeHtml(p.username)}</span></div></td>
-          <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">—</td>
-          <td style="vertical-align:middle;padding:12px 16px;min-height:48px;font-weight: 700; color: #6ab04c;">${p.points}</td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = leaderboard.map((p, i) =>
+        renderStandingsRow(i + 1, p.username, p.points, p.avatarUrl, '')
+      ).join('');
     }
 
     /** Mixed: full standings = bracket players first (in bracket order), then everyone else by FFA points. Status = made it to elimination / did not. */
@@ -691,14 +681,10 @@
 
       const tbody = document.getElementById('standingsTableBody');
       if (!tbody) return;
-      tbody.innerHTML = leaderboard.map((p, i) => `
-        <tr>
-          <td style="vertical-align:middle;padding:12px 16px;min-height:48px;font-weight: 700;">${i + 1}</td>
-          <td style="${ROW_CELL_STYLE}"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${p.avatarUrl ? `<img width="32" height="32" src="${escapeHtml(p.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : AVATAR_PLACEHOLDER}<span style="${ROW_NAME_STYLE}">${escapeHtml(p.username)}</span></div></td>
-          <td style="vertical-align:middle;padding:12px 16px;min-height:48px;font-weight: 700; color: #6ab04c;">${p.totalPoints}</td>
-          <td style="vertical-align:middle;padding:12px 16px;min-height:48px;"><span class="badge ${p.madeElimination ? 'badge-success' : 'badge-info'}" data-i18n="${p.statusKey}">${escapeHtml(p.status)}</span></td>
-        </tr>
-      `).join('');
+      tbody.innerHTML = leaderboard.map((p, i) =>
+        renderStandingsRow(i + 1, p.username, p.totalPoints, p.avatarUrl,
+          '<span class="badge ' + (p.madeElimination ? 'badge-success' : 'badge-info') + '" data-i18n="' + p.statusKey + '">' + escapeHtml(p.status) + '</span>')
+      ).join('');
       if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
     }
 
@@ -835,6 +821,22 @@
     const ROW_CELL_INNER_STYLE = 'display:flex;align-items:center;gap:8px;min-width:0;';
     const ROW_NAME_STYLE = 'font-size:1rem;font-weight:600;white-space:nowrap;';
     const AVATAR_PLACEHOLDER = '<div style="' + ROW_PLACEHOLDER_STYLE + '">🎮</div>';
+
+    /** One standings row in bracket-style: medals, row bg, avatar+name, points, optional status */
+    function renderStandingsRow(rank, username, points, avatarUrl, statusHtml) {
+      const medalEmoji = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+      const rowBg = rank === 1 ? 'background: linear-gradient(to right, #FFD70022, transparent);' : rank === 2 ? 'background: linear-gradient(to right, #C0C0C022, transparent);' : rank === 3 ? 'background: linear-gradient(to right, #CD7F3222, transparent);' : 'background: #fafafa;';
+      const rankColor = rank === 1 ? '#b8860b' : rank === 2 ? '#6c757d' : rank === 3 ? '#cd7f32' : '#333';
+      const avatarImg = avatarUrl ? '<img width="32" height="32" src="' + escapeHtml(avatarUrl) + '" alt="" loading="lazy" style="' + ROW_AVATAR_STYLE + '" />' : AVATAR_PLACEHOLDER;
+      return '<tr style="' + rowBg + ' height: 48px;">' +
+        '<td class="leaderboard-rank-td" style="text-align: center; vertical-align: middle; padding: 12px 16px; height: 48px; max-height: 48px; color: ' + rankColor + '; font-weight: 700; font-size: 1.125rem; box-sizing: border-box;">' +
+        '<span class="leaderboard-rank-inner">' + medalEmoji + ' ' + rank + '</span></td>' +
+        '<td style="' + ROW_CELL_STYLE + '"><div class="participant-cell-inner" style="' + ROW_CELL_INNER_STYLE + '">' + avatarImg + '<span style="' + ROW_NAME_STYLE + '">' + escapeHtml(username || '—') + '</span></div></td>' +
+        '<td style="vertical-align: middle; padding: 12px 16px; height: 48px; max-height: 48px; font-weight: 700; font-size: 1.25rem; color: #6ab04c; box-sizing: border-box;">' + (points != null ? points : '—') + '</td>' +
+        '<td class="standings-status-col" style="vertical-align: middle; padding: 12px 16px; height: 48px; min-height: 48px; box-sizing: border-box;">' + (statusHtml || '') + '</td>' +
+        '</tr>';
+    }
+
     function renderParticipantWithAvatar(display, fallback) {
       const name = display.name || fallback || 'TBD';
       const avatar = display.avatarUrl
@@ -955,13 +957,19 @@
       display: none;
     }
 
-    /* Podium cards: all content centered */
+    /* Podium cards: flex column so every block is centered */
     .podium-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       text-align: center;
     }
     .podium-card h3,
-    .podium-card p {
+    .podium-card p,
+    .podium-card > div {
       text-align: center;
+      width: 100%;
+      box-sizing: border-box;
     }
     /* Avatar + username row centered (bracket populates these with img + text) */
     .podium-card [id$="-username"] {
@@ -970,8 +978,8 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 0.5rem;
-      margin-left: auto;
-      margin-right: auto;
+      width: 100%;
+      box-sizing: border-box;
     }
     .podium-card [id$="-username"] .participant-avatar {
       margin: 0;
