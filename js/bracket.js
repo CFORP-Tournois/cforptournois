@@ -770,25 +770,60 @@
     document.getElementById('participantsSection').classList.remove('hidden');
     document.getElementById('emptyState').classList.add('hidden');
     
-    // Generate participant cards
     const participantsList = document.getElementById('participantsList');
     participantsList.innerHTML = '';
-    
-    participants.forEach((participant, index) => {
-      const card = createParticipantCard(participant, index + 1);
-      participantsList.appendChild(card);
+    participantsList.classList.remove('tournament-grid');
+
+    const groupLabel = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.group') : 'Group';
+
+    // Group participants by group_number and render separate sections
+    const byGroup = {};
+    participants.forEach(p => {
+      const g = p.group_number != null ? p.group_number : 1;
+      if (!byGroup[g]) byGroup[g] = [];
+      byGroup[g].push(p);
     });
-    
-    // Update counts
+    const groupNumbers = Object.keys(byGroup).map(Number).sort((a, b) => a - b);
+
+    groupNumbers.forEach(groupNum => {
+      const groupParticipants = byGroup[groupNum];
+      const section = document.createElement('div');
+      section.className = 'participant-group-section';
+      section.setAttribute('data-group', groupNum);
+      const heading = document.createElement('h3');
+      heading.className = 'participant-group-heading';
+      heading.textContent = `${groupLabel} ${groupNum}`;
+      heading.style.cssText = 'margin: 0 0 1rem 0; font-size: 1.25rem; color: #28724f; font-weight: 700;';
+      const grid = document.createElement('div');
+      grid.className = 'tournament-grid';
+      groupParticipants.forEach((participant, index) => {
+        const card = createParticipantCard(participant, index + 1, groupNum, groupLabel);
+        grid.appendChild(card);
+      });
+      section.appendChild(heading);
+      section.appendChild(grid);
+      participantsList.appendChild(section);
+    });
+
+    // Add spacing between sections
+    if (groupNumbers.length > 1) {
+      const sections = participantsList.querySelectorAll('.participant-group-section');
+      sections.forEach((el, i) => {
+        if (i > 0) el.style.marginTop = '2.5rem';
+      });
+    }
+
     document.getElementById('participantCountDisplay').textContent = participants.length;
     document.getElementById('participantNumber').textContent = participants.length;
   }
-  
-  function createParticipantCard(participant, number) {
+
+  function createParticipantCard(participant, number, groupNumber, groupLabel) {
     const displayName = (participant.roblox_display_name || participant.roblox_username || '').trim() || participant.roblox_username;
     const avatarHtml = participant.roblox_avatar_url
       ? `<img width="80" height="80" src="${escapeHtml(participant.roblox_avatar_url)}" alt="" class="participant-avatar participant-avatar-img" loading="lazy" style="border-radius:50%;object-fit:cover;display:block;" />`
       : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>';
+    const g = groupNumber != null ? groupNumber : (participant.group_number != null ? participant.group_number : 1);
+    const groupText = (groupLabel || ((window.i18n && window.i18n.t) ? window.i18n.t('bracket.group') : 'Group')) + ' ' + g;
     const card = document.createElement('div');
     card.className = 'participant-card';
     card.innerHTML = `
@@ -797,6 +832,7 @@
       <div class="participant-status">
         #${number}
       </div>
+      <div class="participant-group-badge" style="margin-top: 0.35rem; font-size: 0.8rem; font-weight: 600; color: #28724f;">${escapeHtml(groupText)}</div>
     `;
     return card;
   }
