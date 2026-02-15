@@ -663,11 +663,11 @@
       const bracketSet = new Set(bracketOrderUsernames);
       const inBracket = bracketOrderUsernames.map(u => {
         const p = participants.find(px => px.roblox_username === u);
-        const data = p && pointsByParticipantId[p.id] ? pointsByParticipantId[p.id] : { username: u, totalPoints: 0 };
+        const data = p && pointsByParticipantId[p.id] ? pointsByParticipantId[p.id] : { username: u, roblox_username: u, totalPoints: 0 };
         return { ...data, madeElimination: true };
       });
       const notInBracket = Object.values(pointsByParticipantId)
-        .filter(p => !bracketSet.has(p.username))
+        .filter(p => !bracketSet.has(p.roblox_username))
         .sort((a, b) => b.totalPoints - a.totalPoints);
 
       const t = window.i18n?.t?.bind(window.i18n) || (k => k);
