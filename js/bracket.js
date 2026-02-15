@@ -352,11 +352,6 @@
       const finalMatch = isLastRound ? roundMatches.find(m => m.match_number === 1) : null;
 
       if (isLastRound && (thirdPlaceMatch || finalMatch)) {
-        if (roundIndex > 0) {
-          const prevMatches = rounds[roundNums[roundIndex - 1]];
-          const prevCount = prevMatches.length;
-          html += renderBracketConnector(prevCount, 2);
-        }
         if (thirdPlaceMatch) {
           html += `
         <div class="bracket-round bracket-round-third">
@@ -377,12 +372,6 @@
         </div>`;
         }
         return;
-      }
-
-      if (roundIndex > 0) {
-        const prevMatches = rounds[roundNums[roundIndex - 1]];
-        const prevCount = prevMatches.length;
-        html += renderBracketConnector(prevCount, roundMatches.length);
       }
 
       const roundKey = getBracketRoundNameKey(parseInt(roundNum), totalRounds, roundMatches);
@@ -430,20 +419,6 @@
     return t('bracket.round') + ' ' + roundNum;
   }
 
-  function renderBracketConnector(fromCount, toCount) {
-    const paths = [];
-    const leftCenters = Array.from({ length: fromCount }, (_, i) => (i + 0.5) / fromCount * 100);
-    const rightCenters = Array.from({ length: toCount }, (_, i) => (i + 0.5) / toCount * 100);
-    const midX = 50;
-    for (let i = 0; i < fromCount; i++) {
-      const toIdx = Math.floor((i / fromCount) * toCount);
-      const yLeft = leftCenters[i];
-      const yRight = rightCenters[Math.min(toIdx, toCount - 1)];
-      paths.push(`M 0 ${yLeft} L ${midX} ${yLeft} L ${midX} ${yRight} L 100 ${yRight}`);
-    }
-    return `<div class="bracket-connector" aria-hidden="true"><svg viewBox="0 0 100 100" preserveAspectRatio="none"><path d="${paths.join(' ')}" fill="none" stroke="#6ab04c" stroke-width="2" opacity="0.6"/></svg></div>`;
-  }
-
   function getParticipantUsername(participantField) {
     if (!participantField) return null;
     const p = Array.isArray(participantField) ? participantField[0] : participantField;
@@ -477,12 +452,15 @@
   function renderBracketMatch(match, isThirdPlace, isFinal) {
     const t = window.i18n && window.i18n.t ? window.i18n.t.bind(window.i18n) : (k) => k;
     const byeLabel = t('bracket.bye') || 'Bye';
+    const tbdLabel = t('bracket.tbd') || 'TBD';
+    const emptySlotLabel = (roundNum) => (roundNum === 1 ? byeLabel : tbdLabel);
     const p1 = getParticipantDisplay(match.player1);
     const p2 = getParticipantDisplay(match.player2);
     const winner = getParticipantDisplay(match.winner);
     const winnerName = winner.name;
-    const player1Name = p1.name || (match.player1 ? 'TBD' : byeLabel);
-    const player2Name = p2.name || (match.player2 ? 'TBD' : byeLabel);
+    const r = match.round_number != null ? match.round_number : 1;
+    const player1Name = p1.name || (match.player1 ? tbdLabel : emptySlotLabel(r));
+    const player2Name = p2.name || (match.player2 ? tbdLabel : emptySlotLabel(r));
 
     const isCompleted = match.match_status === 'completed' || match.winner_id;
     const thirdClass = isThirdPlace ? ' bracket-match-third-place' : '';
@@ -496,11 +474,11 @@
         ${badge}
         <div class="bracket-player ${winnerName === player1Name ? 'winner' : winnerName ? 'loser' : ''}">
           ${match.player1_seed ? `<span class="player-seed">${match.player1_seed}</span>` : ''}
-          <span class="bracket-player-inner">${renderParticipantWithAvatar(p1, match.player1 ? 'TBD' : byeLabel)}</span>
+          <span class="bracket-player-inner">${renderParticipantWithAvatar(p1, match.player1 ? tbdLabel : emptySlotLabel(r))}</span>
         </div>
         <div class="bracket-player ${winnerName === player2Name ? 'winner' : winnerName ? 'loser' : ''}">
           ${match.player2_seed ? `<span class="player-seed">${match.player2_seed}</span>` : ''}
-          <span class="bracket-player-inner">${renderParticipantWithAvatar(p2, match.player2 ? 'TBD' : byeLabel)}</span>
+          <span class="bracket-player-inner">${renderParticipantWithAvatar(p2, match.player2 ? tbdLabel : emptySlotLabel(r))}</span>
         </div>
       </div>
     `;

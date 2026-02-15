@@ -209,6 +209,7 @@ const translations = {
       winner: "Gagnant",
       vs: "contre",
       bye: "Exempt",
+      tbd: "À venir",
       
       // Leaderboard
       leaderboardTitle: "Classement",
@@ -510,6 +511,7 @@ const translations = {
       winner: "Winner",
       vs: "vs",
       bye: "Bye",
+      tbd: "TBD",
       
       // Leaderboard
       leaderboardTitle: "Leaderboard",
