@@ -482,6 +482,21 @@
       matchesInRound = Math.floor(matchesInRound / 2);
     }
 
+    // 3rd place match (semifinal losers): same round as final, match_number 2
+    if (bracketSize >= 4) {
+      matches.push({
+        id: `temp_${totalRounds}_2`,
+        round_number: totalRounds,
+        match_number: 2,
+        player1_id: null,
+        player2_id: null,
+        player1_seed: null,
+        player2_seed: null,
+        winner_id: null,
+        match_status: 'pending'
+      });
+    }
+
     linkMatches(matches);
     advanceWinnersIntoNextRound(matches);
     return matches;
@@ -687,8 +702,9 @@
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1rem;">
       `;
 
+      const maxRoundNum = Math.max(...Object.keys(rounds).map(Number));
       matches.forEach(match => {
-        html += renderMatch(match);
+        html += renderMatch(match, maxRoundNum);
       });
 
       html += `
@@ -758,7 +774,7 @@
     return avatar + '<span class="player-name">' + escapeHtml(name) + '</span>';
   }
 
-  function renderMatch(match) {
+  function renderMatch(match, maxRoundNum) {
     const p1 = getParticipantDisplay(match.player1);
     const p2 = getParticipantDisplay(match.player2);
     const winner = getParticipantDisplay(match.winner);
@@ -769,10 +785,13 @@
     const isCompleted = match.match_status === 'completed' || match.winner_id;
     const canSelect = match.player1_id && match.player2_id && !isCompleted;
 
+    const isLastRound = maxRoundNum != null && match.round_number === maxRoundNum;
+    const matchLabel = isLastRound && match.match_number === 2 ? '3rd Place' : isLastRound && match.match_number === 1 ? 'Final' : `Match ${match.match_number}`;
+
     return `
       <div class="bracket-match ${isCompleted ? 'completed' : ''}" style="background: white; border: 2px solid ${isCompleted ? '#6ab04c' : '#e0e0e0'}; border-radius: 8px; padding: 1rem;">
         <div style="margin-bottom: 0.5rem; display: flex; justify-content: space-between; align-items: center;">
-          <span style="font-size: 0.875rem; color: #666; font-weight: 600;">Match ${match.match_number}</span>
+          <span style="font-size: 0.875rem; color: #666; font-weight: 600;">${matchLabel}</span>
           <button type="button" class="btn btn-outline edit-match-btn" data-match-id="${match.id}" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">✏️ Edit</button>
         </div>
         
