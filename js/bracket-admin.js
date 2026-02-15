@@ -466,10 +466,13 @@
     }
 
     // Build subsequent rounds. When W1 is odd (e.g. 5 → 3 winners): round 2 has 2 matches only (no round 3).
+    // When 4 players in semis (W=2): add final + third-place match.
     let W = M1;
     let round = 2;
     while (W > 1) {
-      const matchesInRound = W === 3 ? 2 : Math.floor(W / 2); // 3 winners → 2 matches (semifinal + final)
+      let matchesInRound = W === 3 ? 2 : Math.floor(W / 2);
+      const isFinalRound = W === 2; // 2 semifinal winners → final round; also add 3rd place match
+      if (isFinalRound) matchesInRound = 2; // match 1 = final, match 2 = 3rd place playoff
       for (let i = 1; i <= matchesInRound; i++) {
         matches.push({
           round_number: round,
@@ -483,6 +486,7 @@
         });
       }
       if (W === 3) break; // only 2 rounds: bye winner in R2M2, other two in R2M1
+      if (isFinalRound) break; // final + 3rd place created; no further rounds
       W = Math.floor(W / 2) + (W % 2);
       round++;
     }
@@ -900,6 +904,19 @@
       // Advance winner to next match
       if (updatedMatch.next_match_id) {
         await advanceWinner(updatedMatch.next_match_id, winnerId);
+      }
+
+      // If this was a semifinal (next match is final), send loser to 3rd place match
+      const loserId = updatedMatch.player1_id === winnerId ? updatedMatch.player2_id : updatedMatch.player1_id;
+      if (loserId && updatedMatch.next_match_id) {
+        const { data: nextMatch } = await supabase.from('bracket_matches').select('round_number').eq('id', updatedMatch.next_match_id).single();
+        if (nextMatch) {
+          const { data: thirdPlaceRows } = await supabase.from('bracket_matches').select('id').eq('tournament_id', currentTournament.id).eq('round_number', nextMatch.round_number).eq('match_number', 2);
+          if (thirdPlaceRows && thirdPlaceRows.length > 0) {
+            const slot = updatedMatch.match_number === 1 ? 'player1_id' : 'player2_id';
+            await supabase.from('bracket_matches').update({ [slot]: loserId }).eq('id', thirdPlaceRows[0].id);
+          }
+        }
       }
 
       // Reload bracket

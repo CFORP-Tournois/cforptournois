@@ -448,9 +448,9 @@
           .from('bracket_matches')
           .select(`
             *,
-            player1:participants!bracket_matches_player1_id_fkey(roblox_username, roblox_display_name, roblox_avatar_url),
-            player2:participants!bracket_matches_player2_id_fkey(roblox_username, roblox_display_name, roblox_avatar_url),
-            winner:participants!bracket_matches_winner_id_fkey(roblox_username, roblox_display_name, roblox_avatar_url)
+            player1:participants!bracket_matches_player1_id_fkey(id, roblox_username, roblox_display_name, roblox_avatar_url),
+            player2:participants!bracket_matches_player2_id_fkey(id, roblox_username, roblox_display_name, roblox_avatar_url),
+            winner:participants!bracket_matches_winner_id_fkey(id, roblox_username, roblox_display_name, roblox_avatar_url)
           `)
           .eq('tournament_id', tournament.id)
           .order('round_number', { ascending: true })
@@ -493,8 +493,10 @@
       const seen = new Set();
 
       const addIfNew = (display) => {
-        if (!display || !display.id || seen.has(display.id)) return;
-        seen.add(display.id);
+        if (!display) return;
+        const key = display.id || display.name || '—';
+        if (seen.has(key)) return;
+        seen.add(key);
         leaderboard.push({
           username: display.name || '—',
           avatarUrl: display.avatarUrl || null,
@@ -512,7 +514,7 @@
         addIfNew(loserD);
       }
 
-      // All other rounds (semi, quarter, round-of-16, etc.): add losers in reverse round order (semi first, then quarter, ...)
+      // All other rounds (semi, quarter, etc.): add losers in reverse round order
       for (let i = roundNumbers.length - 2; i >= 0; i--) {
         const roundMatches = rounds[roundNumbers[i]] || [];
         roundMatches.forEach(match => {
@@ -522,6 +524,16 @@
           const loser = (w.id && p1.id && w.id === p1.id ? p2 : p1) || (p1.id ? p1 : p2);
           addIfNew(loser);
         });
+      }
+
+      // 3rd place: winner of the third-place match (same round as final, match_number 2) if it exists
+      const finalRoundMatches = rounds[finalRound] || [];
+      const thirdPlaceMatch = finalRoundMatches.find(m => m.match_number === 2);
+      if (thirdPlaceMatch && thirdPlaceMatch.winner_id) {
+        const thirdD = getParticipantDisplay(thirdPlaceMatch.winner);
+        const thirdEntry = { username: thirdD.name || '—', avatarUrl: thirdD.avatarUrl || null, points: 0 };
+        if (leaderboard.length >= 3) leaderboard[2] = thirdEntry;
+        else if (leaderboard.length === 2) leaderboard.push(thirdEntry);
       }
 
       // Podium
