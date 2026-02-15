@@ -614,15 +614,21 @@ a:focus-visible {
   box-sizing: border-box;
   overflow: hidden;
 }
-/* Participant (name) column: wide enough for full names; scroll to see points if needed */
+/* Participant (name) column: clip so it never overlaps Points/Status; ellipsis for long names */
 .table th:nth-child(2),
 .table td:nth-child(2) {
   min-width: 200px;
-  overflow: visible;
+  overflow: hidden;
 }
-/* Allow participant name to show in full (no ellipsis) */
 .table td:nth-child(2) .participant-cell-inner {
-  overflow: visible;
+  overflow: hidden;
+  min-width: 0;
+}
+.table td:nth-child(2) .participant-cell-inner > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
 }
 /* Points and Status columns: enough space so they don't overlap */
 .table th:nth-child(3),
