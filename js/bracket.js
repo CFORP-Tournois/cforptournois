@@ -354,8 +354,12 @@
 
       if (isLastRound && (thirdPlaceMatch || finalMatch)) {
         const half = Math.max(1, Math.floor(slotCount / 2));
+        const finalSpan = Math.max(1, Math.floor(slotCount / 4));
+        const thirdSpan = Math.max(1, Math.floor(slotCount / 4));
+        const finalRowStart = Math.max(1, half - finalSpan);
+        const thirdRowStart = half + 1;
         if (thirdPlaceMatch) {
-          const gridStyle = `grid-row: ${half + 1} / span ${slotCount - half};`;
+          const gridStyle = `grid-row: ${thirdRowStart} / span ${thirdSpan};`;
           html += `
         <div class="bracket-round bracket-round-third">
           <div class="bracket-round-title bracket-round-title-third" data-i18n="bracket.thirdPlace">3rd Place</div>
@@ -365,8 +369,7 @@
         </div>`;
         }
         if (finalMatch) {
-          const half = Math.max(1, Math.floor(slotCount / 2));
-          const gridStyle = `grid-row: 1 / span ${half};`;
+          const gridStyle = `grid-row: ${finalRowStart} / span ${finalSpan};`;
           const roundKey = getBracketRoundNameKey(parseInt(roundNum), totalRounds, roundMatches);
           const roundName = getBracketRoundName(parseInt(roundNum), totalRounds, roundMatches);
           const roundTitleHtml = roundKey === 'bracket.round'
