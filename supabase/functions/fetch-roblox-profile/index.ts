@@ -15,6 +15,7 @@ const corsHeaders = {
 };
 
 const ROBLOX_USERS_URL = 'https://users.roblox.com/v1/usernames/users';
+// Must use avatar-headshot so CDN URL is tr.rbxcdn.com/30DAY-AvatarHeadshot (works in UI). Do not use avatar or avatar-bust (t7/180DAY).
 const ROBLOX_THUMBNAILS_URL = 'https://thumbnails.roblox.com/v1/users/avatar-headshot';
 
 interface RobloxUserLookup {

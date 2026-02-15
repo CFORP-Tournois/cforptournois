@@ -70,3 +70,6 @@ STATUS_AND_NEXT_STEPS.md
 
 # Any other .md files in root
 *.md
+
+# Simulation scripts and output (local testing)
+Simulations/

@@ -338,7 +338,7 @@
       return `
       <tr>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${index + 1}</td>
-        <td style="${ROW_CELL_STYLE} color: #28724f;"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></div></td>
+        <td style="${ROW_CELL_STYLE} color: #28724f;"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${(window.supabaseConfig && window.supabaseConfig.getDisplayAvatarUrl(p.roblox_avatar_url)) ? `<img width="32" height="32" src="${escapeHtml(window.supabaseConfig.getDisplayAvatarUrl(p.roblox_avatar_url))}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></div></td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${escapeHtml(tournamentName)}</td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
           <select class="form-input" style="min-width:100px;padding:4px 8px;" data-participant-id="${p.id}" onchange="updateParticipantGroup('${p.id}', parseInt(this.value))">${groupOptions}</select>
@@ -520,7 +520,7 @@
       return `
       <tr data-search="${escapeHtml(searchable)}" style="height: 48px;">
         <td style="vertical-align: middle; padding: 12px 16px; height: 48px; box-sizing: border-box;">${index + 1}</td>
-        <td style="${ROW_CELL_STYLE}"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml(displayName(p))}</span></div></td>
+        <td style="${ROW_CELL_STYLE}"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${(window.supabaseConfig && window.supabaseConfig.getDisplayAvatarUrl(p.roblox_avatar_url)) ? `<img width="32" height="32" src="${escapeHtml(window.supabaseConfig.getDisplayAvatarUrl(p.roblox_avatar_url))}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml(displayName(p))}</span></div></td>
         <td style="vertical-align: middle; padding: 12px 16px; height: 48px; box-sizing: border-box;">
           <input 
             type="number" 
@@ -800,8 +800,9 @@
         const hasResult = !!result;
         const placementVal = hasResult ? result.placement : '';
         const pointsVal = hasResult ? result.points : '—';
-        const avatarHtml = p.roblox_avatar_url
-          ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
+        const displayAvatarUrl = window.supabaseConfig ? window.supabaseConfig.getDisplayAvatarUrl(p.roblox_avatar_url) : p.roblox_avatar_url;
+        const avatarHtml = displayAvatarUrl
+          ? `<img width="32" height="32" src="${escapeHtml(displayAvatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
           : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`;
         const row = document.createElement('tr');
         row.dataset.search = searchable;

@@ -491,7 +491,7 @@
     const p = Array.isArray(participantField) ? participantField[0] : participantField;
     if (!p) return { name: null, avatarUrl: null };
     const name = (p.roblox_display_name || p.roblox_username || '').trim() || null;
-    const avatarUrl = p.roblox_avatar_url || null;
+    const avatarUrl = (window.supabaseConfig && window.supabaseConfig.getDisplayAvatarUrl) ? window.supabaseConfig.getDisplayAvatarUrl(p.roblox_avatar_url) : (p.roblox_avatar_url || null);
     return { name, avatarUrl };
   }
 
@@ -646,7 +646,7 @@
       participantScores[p.id] = {
         id: p.id,
         username: (p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username,
-        avatarUrl: p.roblox_avatar_url || null,
+        avatarUrl: (window.supabaseConfig && window.supabaseConfig.getDisplayAvatarUrl) ? window.supabaseConfig.getDisplayAvatarUrl(p.roblox_avatar_url) : (p.roblox_avatar_url || null),
         totalPoints: 0,
         roundsPlayed: 0,
         groupNumber: p.group_number != null ? p.group_number : 1
@@ -819,8 +819,9 @@
 
   function createParticipantCard(participant, number, groupNumber, groupLabel) {
     const displayName = (participant.roblox_display_name || participant.roblox_username || '').trim() || participant.roblox_username;
-    const avatarHtml = participant.roblox_avatar_url
-      ? `<img width="80" height="80" src="${escapeHtml(participant.roblox_avatar_url)}" alt="" class="participant-avatar participant-avatar-img" loading="lazy" style="border-radius:50%;object-fit:cover;display:block;" />`
+    const displayAvatarUrl = (window.supabaseConfig && window.supabaseConfig.getDisplayAvatarUrl) ? window.supabaseConfig.getDisplayAvatarUrl(participant.roblox_avatar_url) : participant.roblox_avatar_url;
+    const avatarHtml = displayAvatarUrl
+      ? `<img width="80" height="80" src="${escapeHtml(displayAvatarUrl)}" alt="" class="participant-avatar participant-avatar-img" loading="lazy" style="border-radius:50%;object-fit:cover;display:block;" />`
       : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>';
     const g = groupNumber != null ? groupNumber : (participant.group_number != null ? participant.group_number : 1);
     const groupText = (groupLabel || ((window.i18n && window.i18n.t) ? window.i18n.t('bracket.group') : 'Group')) + ' ' + g;

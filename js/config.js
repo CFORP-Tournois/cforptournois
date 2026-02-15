@@ -55,6 +55,13 @@ function isSupabaseConfigured() {
          supabaseClient !== null;
 }
 
+// Roblox CDN: only use headshot URLs (tr.rbxcdn.com, 30DAY-AvatarHeadshot). Reject bust/full (t7, 180DAY) so we don't show broken images.
+function getDisplayAvatarUrl(robloxAvatarUrl) {
+  if (!robloxAvatarUrl || typeof robloxAvatarUrl !== 'string') return null;
+  if (robloxAvatarUrl.includes('180DAY') || robloxAvatarUrl.includes('t7.rbxcdn.com')) return null;
+  return robloxAvatarUrl;
+}
+
 // Export for use in other files
 if (typeof window !== 'undefined') {
   window.supabaseConfig = {
@@ -62,7 +69,8 @@ if (typeof window !== 'undefined') {
     TABLES,
     TOURNAMENT_TYPES,
     TOURNAMENT_STATUS,
-    isSupabaseConfigured
+    isSupabaseConfigured,
+    getDisplayAvatarUrl
   };
 }
 

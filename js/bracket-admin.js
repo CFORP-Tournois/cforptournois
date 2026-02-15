@@ -793,7 +793,7 @@
     const p = Array.isArray(participantField) ? participantField[0] : participantField;
     if (!p) return { name: null, avatarUrl: null };
     const name = (p.roblox_display_name || p.roblox_username || '').trim() || null;
-    const avatarUrl = p.roblox_avatar_url || null;
+    const avatarUrl = (window.supabaseConfig && window.supabaseConfig.getDisplayAvatarUrl) ? window.supabaseConfig.getDisplayAvatarUrl(p.roblox_avatar_url) : (p.roblox_avatar_url || null);
     return { name, avatarUrl };
   }
 

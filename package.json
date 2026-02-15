@@ -1,0 +1,13 @@
+{
+  "name": "afnoo-tournois",
+  "version": "1.0.0",
+  "description": "AFNOO Tournaments - signup E2E simulation",
+  "private": true,
+  "scripts": {
+    "test:signups": "node Simulations/e2e-signup-simulation.js",
+    "test:signups:headed": "node Simulations/e2e-signup-simulation.js --headed"
+  },
+  "devDependencies": {
+    "playwright": "^1.40.0"
+  }
+}
