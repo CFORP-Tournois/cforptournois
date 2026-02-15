@@ -624,19 +624,36 @@ a:focus-visible {
 .table td:nth-child(2) .participant-cell-inner {
   overflow: visible;
 }
+/* Points and Status columns: prevent overlap on mobile */
+.table th:nth-child(3),
+.table td:nth-child(3) {
+  min-width: 80px;
+}
+.table th:nth-child(4),
+.table td:nth-child(4) {
+  min-width: 100px;
+}
 @media (max-width: 768px) {
   .table th:nth-child(2),
   .table td:nth-child(2) {
     min-width: 200px;
+  }
+  .table th:nth-child(3),
+  .table td:nth-child(3) {
+    min-width: 90px;
+  }
+  .table th:nth-child(4),
+  .table td:nth-child(4) {
+    min-width: 110px;
   }
   /* Bracket page leaderboard: participant column wide for full names */
   .table.leaderboard-table th:nth-child(2),
   .table.leaderboard-table td:nth-child(2) {
     min-width: 200px;
   }
-  /* Results page Full Standings: force horizontal scroll so participant names stay visible */
+  /* Results page Full Standings: force horizontal scroll so columns don't overlap */
   .table.standings-table {
-    min-width: 480px;
+    min-width: 560px;
   }
 }
 
