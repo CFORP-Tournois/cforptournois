@@ -118,13 +118,21 @@
             (<span id="participantCountDisplay">0</span>)
           </h2>
           
-          <div id="roundFilterContainer" class="hidden" style="display: flex; align-items: center; gap: 0.75rem;">
-            <label style="font-weight: 600; color: #666; font-size: 0.9rem;">
-              <span data-i18n="bracket.viewRound">View:</span>
-            </label>
-            <select id="roundFilter" class="form-select" style="width: auto; padding: 0.5rem 1rem;">
-              <option value="overall" data-i18n="bracket.overallStandings">Overall Standings</option>
-            </select>
+          <div id="filtersRow" style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <div id="groupFilterContainer" class="hidden" style="display: flex; align-items: center; gap: 0.5rem;">
+              <label style="font-weight: 600; color: #666; font-size: 0.9rem;"><span data-i18n="bracket.group">Group</span>:</label>
+              <select id="groupFilter" class="form-select" style="width: auto; padding: 0.5rem 1rem;">
+                <option value="all" data-i18n="bracket.allGroups">All groups</option>
+              </select>
+            </div>
+            <div id="roundFilterContainer" class="hidden" style="display: flex; align-items: center; gap: 0.75rem;">
+              <label style="font-weight: 600; color: #666; font-size: 0.9rem;">
+                <span data-i18n="bracket.viewRound">View:</span>
+              </label>
+              <select id="roundFilter" class="form-select" style="width: auto; padding: 0.5rem 1rem;">
+                <option value="overall" data-i18n="bracket.overallStandings">Overall Standings</option>
+              </select>
+            </div>
           </div>
         </div>
         

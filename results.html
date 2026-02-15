@@ -129,6 +129,14 @@
         <!-- Bracket (above scoreboard; filled by JS when tournament has bracket) -->
         <div id="bracketTreeSection" style="margin-bottom: 3rem;"></div>
 
+        <!-- Group filter (when tournament has multiple groups) -->
+        <div id="resultsGroupFilterContainer" class="hidden" style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+          <label style="font-weight: 600; color: #666;"><span data-i18n="bracket.group">Group</span>:</label>
+          <select id="resultsGroupFilter" class="form-select" style="width: auto; padding: 0.5rem 1rem;">
+            <option value="all" data-i18n="bracket.allGroups">All groups</option>
+          </select>
+        </div>
+
         <!-- Full Standings Table (hidden for H2H; scoreboard-only = Rank/Participant/Total Points; mixed = + Status) -->
         <div id="fullStandingsSection" style="margin-bottom: 3rem; text-align: center;">
           <h2 style="margin-bottom: 1.5rem;" data-i18n="results.fullStandings">Classement complet</h2>
@@ -209,10 +217,81 @@
     // Results page logic
     let currentTournament = null;
     let tournaments = [];
+    let resultsParticipants = [];
+    let resultsMatches = [];
+    let resultsTournamentObj = null;
+    let resultsBracketStyle = null;
+    let resultsBracketData = null;
+    let resultsViewMode = null; // 'no-bracket' | 'scoreboard' | 'mixed'
+    let resultsGroupFilter = 'all';
 
     document.addEventListener('DOMContentLoaded', async function() {
+      document.getElementById('resultsGroupFilter')?.addEventListener('change', function() {
+        resultsGroupFilter = this.value;
+        refreshResultsView();
+      });
       await loadTournaments();
     });
+
+    function getFilteredResultsParticipants() {
+      if (!resultsParticipants.length) return resultsParticipants;
+      if (resultsGroupFilter === 'all') return resultsParticipants;
+      const g = parseInt(resultsGroupFilter, 10);
+      if (Number.isNaN(g)) return resultsParticipants;
+      return resultsParticipants.filter(p => (p.group_number != null ? p.group_number : 1) === g);
+    }
+
+    function setupResultsGroupFilter(numberOfGroups) {
+      const container = document.getElementById('resultsGroupFilterContainer');
+      const select = document.getElementById('resultsGroupFilter');
+      if (!container || !select) return;
+      const groupText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.group') : 'Group';
+      const allText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.allGroups') : 'All groups';
+      select.innerHTML = '<option value="all">' + allText + '</option>' +
+        Array.from({ length: Math.max(1, numberOfGroups) }, (_, i) => i + 1)
+          .map(n => '<option value="' + n + '">' + groupText + ' ' + n + '</option>').join('');
+      select.value = 'all';
+      resultsGroupFilter = 'all';
+      container.classList.remove('hidden');
+    }
+
+    function hideResultsGroupFilter() {
+      const container = document.getElementById('resultsGroupFilterContainer');
+      if (!container) return;
+      resultsGroupFilter = 'all';
+      container.classList.add('hidden');
+    }
+
+    function refreshResultsView() {
+      if (!resultsViewMode || !resultsTournamentObj) return;
+      const participants = getFilteredResultsParticipants();
+      if (resultsViewMode === 'no-bracket') {
+        document.getElementById('resultsParticipantsSection').classList.remove('hidden');
+        document.getElementById('resultsParticipantCount').textContent = participants.length;
+        const listEl = document.getElementById('resultsParticipantsList');
+        if (listEl) {
+          listEl.innerHTML = '';
+          participants.forEach(function(p, i) {
+            const displayName = (p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username || '—';
+            const avatarHtml = p.roblox_avatar_url
+              ? '<img width="80" height="80" src="' + escapeHtml(p.roblox_avatar_url) + '" alt="" class="participant-avatar participant-avatar-img" loading="lazy" style="border-radius:50%;object-fit:cover;display:block;" />'
+              : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>';
+            const card = document.createElement('div');
+            card.className = 'participant-card';
+            card.innerHTML = avatarHtml + '<div class="participant-name">' + escapeHtml(displayName) + '</div><div class="participant-status">#' + (i + 1) + '</div>';
+            listEl.appendChild(card);
+          });
+        }
+        return;
+      }
+      if (resultsViewMode === 'mixed' && resultsBracketData && resultsBracketData.length > 0) {
+        updateFullStandingsMixed(participants, resultsMatches || [], resultsBracketData);
+        return;
+      }
+      if (resultsViewMode === 'scoreboard' && resultsMatches && resultsMatches.length > 0) {
+        displayScoreboardResults(resultsMatches, resultsTournamentObj, participants);
+      }
+    }
     
     async function loadTournaments() {
       if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
@@ -347,21 +426,29 @@
         // No-bracket: show only participants (same as bracket page before points)
         if (bracketStyle === 'no-bracket') {
           const { data: participants } = await supabase
-            .from('participants')
+            .from(TABLES.PARTICIPANTS)
             .select('*')
             .eq('tournament_id', tournamentObj.id)
             .order('signup_timestamp', { ascending: true });
+          resultsParticipants = participants || [];
+          resultsMatches = matches || [];
+          resultsTournamentObj = tournamentObj;
+          resultsBracketData = null;
+          resultsViewMode = 'no-bracket';
+          const numGroups = Math.max(1, tournamentObj.number_of_groups || 1);
+          if (numGroups > 1) setupResultsGroupFilter(numGroups); else hideResultsGroupFilter();
           document.getElementById('loadingState').classList.add('hidden');
           document.getElementById('resultsContent').classList.remove('hidden');
           document.getElementById('podiumSection').classList.add('hidden');
           document.getElementById('fullStandingsSection').classList.add('hidden');
           document.getElementById('resultsParticipantsSection').classList.remove('hidden');
+          const filtered = getFilteredResultsParticipants();
           const listEl = document.getElementById('resultsParticipantsList');
           const countEl = document.getElementById('resultsParticipantCount');
-          if (countEl) countEl.textContent = participants ? participants.length : 0;
+          if (countEl) countEl.textContent = filtered.length;
           if (listEl) {
             listEl.innerHTML = '';
-            (participants || []).forEach(function(p, i) {
+            filtered.forEach(function(p, i) {
               const displayName = (p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username || '—';
               const avatarHtml = p.roblox_avatar_url
                 ? '<img width="80" height="80" src="' + escapeHtml(p.roblox_avatar_url) + '" alt="" class="participant-avatar participant-avatar-img" loading="lazy" style="border-radius:50%;object-fit:cover;display:block;" />'
@@ -382,28 +469,48 @@
         // Head-to-head or mixed: podium from bracket
         if (bracketStyle === 'head-to-head' || bracketStyle === 'mixed') {
           const { data: participants } = await supabase
-            .from('participants')
+            .from(TABLES.PARTICIPANTS)
             .select('*')
             .eq('tournament_id', tournamentObj.id);
+          resultsParticipants = participants || [];
+          resultsMatches = matches || [];
+          resultsTournamentObj = tournamentObj;
+          resultsBracketStyle = bracketStyle;
           const bracketData = await loadAndDisplayBracketOnResults(tournamentObj);
+          resultsBracketData = bracketData || [];
+          resultsViewMode = bracketStyle === 'mixed' ? 'mixed' : 'scoreboard';
+          const numGroups = Math.max(1, tournamentObj.number_of_groups || 1);
+          if (numGroups > 1) setupResultsGroupFilter(numGroups); else hideResultsGroupFilter();
           const fullStandingsEl = document.getElementById('fullStandingsSection');
           if (bracketStyle === 'head-to-head') {
             if (fullStandingsEl) fullStandingsEl.classList.add('hidden');
           } else {
             if (fullStandingsEl) fullStandingsEl.classList.remove('hidden');
-            if (participants && participants.length > 0) {
-              updateFullStandingsMixed(participants, matches || [], bracketData || []);
+            if (resultsParticipants.length > 0) {
+              updateFullStandingsMixed(getFilteredResultsParticipants(), matches || [], resultsBracketData);
             }
           }
           if (matches && matches.length > 0) {
             const hasBracket = !!document.getElementById('bracketTreeSection')?.querySelector('.bracket-match');
-            if (!hasBracket) displayScoreboardResults(matches, tournamentObj);
+            if (!hasBracket) displayScoreboardResults(matches, tournamentObj, getFilteredResultsParticipants());
           }
         } else {
           // Scoreboard-only: use matches for leaderboard; show full standings (no Status column)
+          const { data: participants } = await supabase
+            .from(TABLES.PARTICIPANTS)
+            .select('*')
+            .eq('tournament_id', tournamentObj.id);
+          resultsParticipants = participants || [];
+          resultsMatches = matches || [];
+          resultsTournamentObj = tournamentObj;
+          resultsBracketStyle = 'scoreboard';
+          resultsBracketData = null;
+          resultsViewMode = 'scoreboard';
+          const numGroups = Math.max(1, tournamentObj.number_of_groups || 1);
+          if (numGroups > 1) setupResultsGroupFilter(numGroups); else hideResultsGroupFilter();
           document.getElementById('fullStandingsSection')?.classList.remove('hidden');
           if (matches && matches.length > 0) {
-            displayScoreboardResults(matches, tournamentObj);
+            displayScoreboardResults(matches, tournamentObj, getFilteredResultsParticipants());
           } else {
             showNoResults();
           }
@@ -425,7 +532,7 @@
       document.getElementById('noResultsState').classList.remove('hidden');
     }
 
-    async function displayScoreboardResults(matches, tournament) {
+    async function displayScoreboardResults(matches, tournament, participantsFilter) {
       document.getElementById('loadingState').classList.add('hidden');
       document.getElementById('resultsContent').classList.remove('hidden');
 
@@ -444,13 +551,19 @@
         });
       });
 
-      const leaderboard = Object.entries(participantScores)
+      let leaderboard = Object.entries(participantScores)
         .map(([username, score]) => ({
           username: username || 'Unknown',
           totalPoints: score.totalPoints,
           matchCount: score.matchCount
         }))
         .sort((a, b) => b.totalPoints - a.totalPoints);
+
+      // If filtering by group, only include usernames that belong to participants in the filter list
+      if (participantsFilter && participantsFilter.length > 0) {
+        const allowedUsernames = new Set(participantsFilter.map(p => p.roblox_username).filter(Boolean));
+        leaderboard = leaderboard.filter(entry => allowedUsernames.has(entry.username));
+      }
 
       // Display podium (top 3)
       if (leaderboard.length >= 1) {

@@ -164,6 +164,8 @@ const translations = {
       viewRound: "Afficher :",
       overallStandings: "Classement général",
       round: "Ronde",
+      group: "Groupe",
+      allGroups: "Tous les groupes",
       
       // Empty State
       noParticipants: "Aucun participant inscrit",
@@ -466,6 +468,8 @@ const translations = {
       viewRound: "View:",
       overallStandings: "Overall Standings",
       round: "Round",
+      group: "Group",
+      allGroups: "All groups",
       
       // Empty State
       noParticipants: "No participants registered",

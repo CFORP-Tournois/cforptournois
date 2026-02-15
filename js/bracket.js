@@ -5,11 +5,13 @@
   'use strict';
 
   let currentTournament = null; // Will be set to first tournament
+  let currentTournamentObj = null; // Full tournament object (for number_of_groups etc.)
   let realtimeSubscription = null;
   let tournaments = [];
   let currentMatches = []; // Store matches for filtering
   let currentParticipants = []; // Store participants for filtering
   let currentRoundFilter = 'overall'; // Current round filter
+  let currentGroupFilter = 'all'; // 'all' or '1', '2', ... for group filter
 
   // Wait for DOM to be ready
   document.addEventListener('DOMContentLoaded', initBracketPage);
@@ -18,7 +20,11 @@
     // Single change listener for round dropdown (per-tournament options set in setupRoundFilter)
     document.getElementById('roundFilter')?.addEventListener('change', function(e) {
       currentRoundFilter = e.target.value;
-      displayLeaderboard(currentParticipants, currentMatches, currentRoundFilter);
+      displayLeaderboard(getFilteredParticipants(), currentMatches, currentRoundFilter);
+    });
+    document.getElementById('groupFilter')?.addEventListener('change', function(e) {
+      currentGroupFilter = e.target.value;
+      refreshViewAfterGroupChange();
     });
 
     // Load tournaments first
@@ -204,7 +210,10 @@
         showEmpty();
         return;
       }
-      
+      currentTournamentObj = tournamentObj;
+      const numGroups = Math.max(1, tournamentObj.number_of_groups || 1);
+      currentGroupFilter = 'all';
+
       // Clear bracket immediately when switching tournaments (only re-show if this one has bracket)
       clearBracketSection();
       
@@ -255,7 +264,8 @@
       // No-bracket: always show only participants list (no leaderboard, no bracket tree)
       if (bracketStyle === 'no-bracket') {
         hideRoundFilter();
-        displayParticipants(participants);
+        if (numGroups > 1) setupGroupFilter(numGroups); else hideGroupFilter();
+        displayParticipants(getFilteredParticipants());
         clearBracketSection();
         return;
       }
@@ -265,12 +275,14 @@
         console.log('✅ Displaying leaderboard with', matches.length, 'matches');
         currentRoundFilter = 'overall';
         setupRoundFilter(matches);
-        displayLeaderboard(participants, matches, 'overall');
+        if (numGroups > 1) setupGroupFilter(numGroups); else hideGroupFilter();
+        displayLeaderboard(getFilteredParticipants(), matches, 'overall');
       } else {
         // No results yet: hide round dropdown and show participant list only
         console.log('ℹ️ No matches found - showing participant list');
         hideRoundFilter();
-        displayParticipants(participants);
+        if (numGroups > 1) setupGroupFilter(numGroups); else hideGroupFilter();
+        displayParticipants(getFilteredParticipants());
       }
 
       // Load bracket only if this tournament uses head-to-head or mixed (not scoreboard / no-bracket)
@@ -513,6 +525,50 @@
     `;
   }
   
+  function getFilteredParticipants() {
+    if (!currentParticipants.length) return currentParticipants;
+    if (currentGroupFilter === 'all') return currentParticipants;
+    const g = parseInt(currentGroupFilter, 10);
+    if (Number.isNaN(g)) return currentParticipants;
+    return currentParticipants.filter(p => (p.group_number != null ? p.group_number : 1) === g);
+  }
+
+  function refreshViewAfterGroupChange() {
+    const participants = getFilteredParticipants();
+    const bracketStyle = currentTournamentObj && (currentTournamentObj.bracket_style || 'scoreboard').toLowerCase();
+    if (bracketStyle === 'no-bracket') {
+      displayParticipants(participants);
+      return;
+    }
+    if (currentMatches && currentMatches.length > 0) {
+      displayLeaderboard(participants, currentMatches, currentRoundFilter);
+    } else {
+      displayParticipants(participants);
+    }
+  }
+
+  function hideGroupFilter() {
+    const container = document.getElementById('groupFilterContainer');
+    if (!container) return;
+    currentGroupFilter = 'all';
+    container.classList.add('hidden');
+  }
+
+  function setupGroupFilter(numberOfGroups) {
+    const container = document.getElementById('groupFilterContainer');
+    const select = document.getElementById('groupFilter');
+    if (!container || !select) return;
+    const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
+    const allText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.allGroups') : 'All groups';
+    const groupText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.group') : 'Group';
+    select.innerHTML = `<option value="all">${allText}</option>` +
+      Array.from({ length: Math.max(1, numberOfGroups) }, (_, i) => i + 1)
+        .map(n => `<option value="${n}">${groupText} ${n}</option>`).join('');
+    select.value = 'all';
+    currentGroupFilter = 'all';
+    container.classList.remove('hidden');
+  }
+
   function hideRoundFilter() {
     const filterContainer = document.getElementById('roundFilterContainer');
     const filterSelect = document.getElementById('roundFilter');

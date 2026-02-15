@@ -277,6 +277,48 @@
   // DATABASE OPERATIONS
   // ============================================
   
+  /** Even split by signup order: same count per group, or +1 for first (total % numGroups) groups. */
+  function computeGroupAssignments(participantsOrderedBySignup, maxPerGroup) {
+    if (!maxPerGroup || maxPerGroup < 1) return null;
+    const total = participantsOrderedBySignup.length;
+    if (total === 0) return [];
+    const numGroups = Math.max(1, Math.ceil(total / maxPerGroup));
+    const base = Math.floor(total / numGroups);
+    const remainder = total % numGroups;
+    const assignments = [];
+    let idx = 0;
+    for (let g = 1; g <= numGroups; g++) {
+      const size = g <= remainder ? base + 1 : base;
+      for (let i = 0; i < size && idx < participantsOrderedBySignup.length; i++) {
+        assignments.push({ id: participantsOrderedBySignup[idx].id, group_number: g });
+        idx++;
+      }
+    }
+    return assignments;
+  }
+
+  async function runAutoSplitForTournament(tournamentId) {
+    const supabase = window.supabaseConfig.supabase;
+    const TABLES = window.supabaseConfig.TABLES;
+    const { data: tournament, error: tErr } = await supabase.from('tournaments').select('max_participants_per_group').eq('id', tournamentId).single();
+    if (tErr || !tournament || tournament.max_participants_per_group == null) return;
+    const maxPerGroup = parseInt(tournament.max_participants_per_group, 10);
+    if (!maxPerGroup || maxPerGroup < 1) return;
+    const { data: participants, error: pErr } = await supabase
+      .from(TABLES.PARTICIPANTS)
+      .select('id, signup_timestamp')
+      .eq('tournament_id', tournamentId)
+      .order('signup_timestamp', { ascending: true });
+    if (pErr || !participants || participants.length === 0) return;
+    const assignments = computeGroupAssignments(participants, maxPerGroup);
+    if (!assignments || assignments.length === 0) return;
+    const numGroups = Math.max(...assignments.map(a => a.group_number));
+    for (const { id, group_number } of assignments) {
+      await supabase.from(TABLES.PARTICIPANTS).update({ group_number }).eq('id', id);
+    }
+    await supabase.from('tournaments').update({ number_of_groups: numGroups }).eq('id', tournamentId);
+  }
+
   async function saveToDatabase(formData) {
     const supabase = window.supabaseConfig.supabase;
     const TABLES = window.supabaseConfig.TABLES;
@@ -312,6 +354,9 @@
     if (error) {
       throw new Error('Registration error: ' + error.message);
     }
+
+    // Auto-split groups when tournament has max_participants_per_group (e.g. 36 → 40 signups = 2 groups of 20)
+    runAutoSplitForTournament(formData.tournamentId).catch(err => console.warn('Auto-split after signup:', err));
 
     // Fetch Roblox display name + avatar only when this tournament's platform is Roblox
     if (formData.gamePlatform === 'roblox') {

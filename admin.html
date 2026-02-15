@@ -129,13 +129,14 @@
                   <th>#</th>
                   <th>Roblox Username</th>
                   <th>Tournament</th>
+                  <th>Group</th>
                   <th>Signup Time</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody id="participantsTableBody">
                 <tr>
-                  <td colspan="6" style="text-align: center; padding: 2rem; color: #666;">
+                  <td colspan="7" style="text-align: center; padding: 2rem; color: #666;">
                     Loading participants...
                   </td>
                 </tr>
@@ -561,6 +562,12 @@
                     <div class="form-group">
                       <label class="form-label">Max Participants</label>
                       <input type="number" id="maxParticipants" class="form-input" min="1">
+                    </div>
+
+                    <div class="form-group">
+                      <label class="form-label">Max participants per group</label>
+                      <input type="number" id="maxParticipantsPerGroup" class="form-input" min="1" placeholder="e.g. 36" title="Game limit per round (e.g. Roblox 36). When signups exceed this, participants are auto-split into even groups.">
+                      <p class="form-help">Set the game limit per round (e.g. 36 for Rivals). When total signups exceed this, participants are automatically split into even groups (e.g. 40 → 2 groups of 20). Odd totals split as evenly as possible (e.g. 41 → 21 and 20).</p>
                     </div>
 
                     <div class="form-group">

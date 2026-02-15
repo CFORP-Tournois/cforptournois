@@ -205,7 +205,53 @@
   // ============================================
   // PARTICIPANTS MANAGEMENT
   // ============================================
-  
+
+  /** Even split: same count per group, or +1 for first (total % numGroups) groups. By signup order. */
+  function computeGroupAssignments(participantsOrderedBySignup, maxPerGroup) {
+    if (!maxPerGroup || maxPerGroup < 1) return null;
+    const total = participantsOrderedBySignup.length;
+    if (total === 0) return [];
+    const numGroups = Math.max(1, Math.ceil(total / maxPerGroup));
+    const base = Math.floor(total / numGroups);
+    const remainder = total % numGroups;
+    const assignments = [];
+    let idx = 0;
+    for (let g = 1; g <= numGroups; g++) {
+      const size = g <= remainder ? base + 1 : base;
+      for (let i = 0; i < size && idx < participantsOrderedBySignup.length; i++) {
+        assignments.push({ id: participantsOrderedBySignup[idx].id, group_number: g });
+        idx++;
+      }
+    }
+    return assignments;
+  }
+
+  /** Run auto-split for a tournament: update participant group_number in DB and tournament.number_of_groups. Returns assignments array or null on error. */
+  async function runAutoSplitAndSave(tournamentId, participants, maxPerGroup) {
+    if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) return null;
+    const sorted = [...participants].sort((a, b) => new Date(a.signup_timestamp) - new Date(b.signup_timestamp));
+    const assignments = computeGroupAssignments(sorted, maxPerGroup);
+    if (!assignments || assignments.length === 0) return null;
+    const supabase = window.supabaseConfig.supabase;
+    const TABLES = window.supabaseConfig.TABLES;
+    const numGroups = Math.max(...assignments.map(a => a.group_number));
+    try {
+      for (const { id, group_number } of assignments) {
+        const { error } = await supabase.from(TABLES.PARTICIPANTS).update({ group_number }).eq('id', id);
+        if (error) {
+          console.error('Error updating participant group:', error);
+          return null;
+        }
+      }
+      const { error: tErr } = await supabase.from('tournaments').update({ number_of_groups: numGroups }).eq('id', tournamentId);
+      if (tErr) console.warn('Could not update tournament number_of_groups:', tErr);
+      return assignments;
+    } catch (e) {
+      console.error('runAutoSplitAndSave error:', e);
+      return null;
+    }
+  }
+
   async function loadParticipants() {
     const filterTournament = document.getElementById('filterTournament').value;
     
@@ -224,7 +270,7 @@
         .from(TABLES.PARTICIPANTS)
         .select(`
           *,
-          tournament:tournaments!inner(id, name_en, name_fr, tournament_type)
+          tournament:tournaments!inner(id, name_en, name_fr, tournament_type, number_of_groups, max_participants_per_group)
         `)
         .order('signup_timestamp', { ascending: false });
       
@@ -240,7 +286,22 @@
         return;
       }
       
-      currentParticipants = participants || [];
+      let list = participants || [];
+      // Auto-split into groups when this tournament has max_participants_per_group set and we're viewing one tournament
+      if (filterTournament !== 'all' && list.length > 0) {
+        const tournament = adminTournaments.find(t => t.id === filterTournament);
+        const maxPerGroup = tournament && tournament.max_participants_per_group != null ? parseInt(tournament.max_participants_per_group, 10) : null;
+        if (maxPerGroup && maxPerGroup >= 1) {
+          const updated = await runAutoSplitAndSave(filterTournament, list, maxPerGroup);
+          if (updated) {
+            list = list.map(p => {
+              const u = updated.find(x => x.id === p.id);
+              return u ? { ...p, group_number: u.group_number } : p;
+            });
+          }
+        }
+      }
+      currentParticipants = list;
       displayParticipantsTable(currentParticipants);
       
     } catch (error) {
@@ -254,7 +315,7 @@
     if (participants.length === 0) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="6" style="text-align: center; padding: 2rem; color: #666;">
+          <td colspan="7" style="text-align: center; padding: 2rem; color: #666;">
             No participants yet. Waiting for signups...
           </td>
         </tr>
@@ -263,17 +324,26 @@
     }
     
     tbody.innerHTML = participants.map((p, index) => {
-      // Get tournament name from joined data or fallback
+      // Get tournament name and number_of_groups from joined data or fallback (use max group in list so auto-split is reflected)
       const tournament = p.tournament;
       const tournamentName = tournament 
         ? (tournament.name_en || tournament.name_fr || 'Unknown Tournament')
         : (adminTournaments.find(t => t.id === p.tournament_id)?.name_en || p.tournament_type || 'Unknown');
+      const sameTournament = participants.filter(x => x.tournament_id === p.tournament_id);
+      const maxGroupInList = sameTournament.length ? Math.max(...sameTournament.map(x => x.group_number != null ? x.group_number : 1)) : 1;
+      const numGroups = Math.max(1, (tournament && tournament.number_of_groups != null) ? tournament.number_of_groups : (adminTournaments.find(t => t.id === p.tournament_id)?.number_of_groups) || 0, maxGroupInList);
+      const currentGroup = p.group_number != null ? p.group_number : 1;
+      const groupOptions = Array.from({ length: numGroups }, (_, i) => i + 1)
+        .map(n => `<option value="${n}" ${n === currentGroup ? 'selected' : ''}>Group ${n}</option>`).join('');
       
       return `
       <tr>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${index + 1}</td>
         <td style="${ROW_CELL_STYLE} color: #28724f;"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></div></td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${escapeHtml(tournamentName)}</td>
+        <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
+          <select class="form-input" style="min-width:100px;padding:4px 8px;" data-participant-id="${p.id}" onchange="updateParticipantGroup('${p.id}', parseInt(this.value))">${groupOptions}</select>
+        </td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${formatDate(p.signup_timestamp)}</td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
           <button class="btn btn-accent" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;" onclick="deleteParticipant('${p.id}')">
@@ -295,6 +365,19 @@
     });
   }
   
+  window.updateParticipantGroup = async function(participantId, groupNumber) {
+    if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) return;
+    const supabase = window.supabaseConfig.supabase;
+    const TABLES = window.supabaseConfig.TABLES;
+    const { error } = await supabase.from(TABLES.PARTICIPANTS).update({ group_number: groupNumber }).eq('id', participantId);
+    if (error) {
+      console.error('Error updating participant group:', error);
+      alert('Failed to update group');
+    } else {
+      loadParticipants();
+    }
+  };
+
   // Make functions global for onclick handlers
   window.deleteParticipant = async function(participantId) {
     if (!confirm('Are you sure you want to delete this participant?')) {
@@ -1188,6 +1271,7 @@
     document.getElementById('tournamentStatus').value = tournament.status || 'draft';
     document.getElementById('tournamentTime').value = tournament.tournament_time || '';
     document.getElementById('maxParticipants').value = tournament.max_participants || '';
+    document.getElementById('maxParticipantsPerGroup').value = tournament.max_participants_per_group != null ? tournament.max_participants_per_group : '';
     document.getElementById('displayOrder').value = tournament.display_order || 1;
     
     // Format date for datetime-local input
@@ -1248,6 +1332,7 @@
       tournament_date: document.getElementById('tournamentDate').value ? new Date(document.getElementById('tournamentDate').value).toISOString() : null,
       tournament_time: document.getElementById('tournamentTime').value || null,
       max_participants: document.getElementById('maxParticipants').value ? parseInt(document.getElementById('maxParticipants').value) : null,
+      max_participants_per_group: document.getElementById('maxParticipantsPerGroup').value ? parseInt(document.getElementById('maxParticipantsPerGroup').value) : null,
       display_order: parseInt(document.getElementById('displayOrder').value) || 0,
       updated_at: new Date().toISOString()
     };
