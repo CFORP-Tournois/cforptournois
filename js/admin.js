@@ -31,7 +31,8 @@
   // Inline styles so participant rows look the same everywhere (no reliance on CSS load order)
   const ROW_AVATAR_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:block;flex-shrink:0';
   const ROW_PLACEHOLDER_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;background:#e8ece9;flex-shrink:0';
-  const ROW_CELL_STYLE = 'vertical-align:middle;padding:12px 16px;min-height:48px;display:flex;align-items:center;gap:8px;';
+  const ROW_CELL_STYLE = 'vertical-align:middle;padding:12px 16px;height:48px;max-height:48px;box-sizing:border-box;';
+  const ROW_CELL_INNER_STYLE = 'display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0;';
   const ROW_NAME_STYLE = 'font-size:1rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0;';
 
   // Initialize on page load
@@ -271,7 +272,7 @@
       return `
       <tr>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${index + 1}</td>
-        <td style="${ROW_CELL_STYLE} color: #28724f;">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></td>
+        <td style="${ROW_CELL_STYLE} color: #28724f;"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></div></td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${escapeHtml(tournamentName)}</td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${formatDate(p.signup_timestamp)}</td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
@@ -437,7 +438,7 @@
       return `
       <tr data-search="${escapeHtml(searchable)}" style="height: 48px;">
         <td style="vertical-align: middle; padding: 12px 16px; height: 48px; box-sizing: border-box;">${index + 1}</td>
-        <td style="${ROW_CELL_STYLE} height: 48px; box-sizing: border-box; max-height: 48px; overflow: hidden;">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml(displayName(p))}</span></td>
+        <td style="${ROW_CELL_STYLE}"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml(displayName(p))}</span></div></td>
         <td style="vertical-align: middle; padding: 12px 16px; height: 48px; box-sizing: border-box;">
           <input 
             type="number" 
@@ -724,7 +725,7 @@
         row.dataset.search = searchable;
         row.innerHTML = `
           <td style="text-align: center; font-weight: 600; vertical-align: middle; padding: 12px 16px; min-height: 48px;">${roundNum}</td>
-          <td style="${ROW_CELL_STYLE}">${avatarHtml}<span style="${ROW_NAME_STYLE}">${escapeHtml(name)}</span></td>
+          <td style="${ROW_CELL_STYLE}"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${avatarHtml}<span style="${ROW_NAME_STYLE}">${escapeHtml(name)}</span></div></td>
           <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px;">
             <input 
               type="number" 

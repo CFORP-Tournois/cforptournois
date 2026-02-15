@@ -585,6 +585,7 @@ a:focus-visible {
 .table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
   background: var(--cf-white);
 }
 
@@ -610,6 +611,15 @@ a:focus-visible {
   min-height: 48px;
   max-height: 48px;
   box-sizing: border-box;
+  overflow: hidden;
+}
+/* Inner wrapper for participant cells: flex must be on a div inside td, not on td, so row height stays correct */
+.table .participant-cell-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow: hidden;
+  min-width: 0;
 }
 
 .table tr:last-child td {
