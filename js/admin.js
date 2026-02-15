@@ -26,6 +26,7 @@
   let currentParticipants = [];
   let adminTournaments = []; // Store tournaments for admin operations
   let existingResultsMatches = []; // Store matches for "Existing Results" so round filter doesn't reload and reset
+  let existingResultsParticipants = []; // All participants for selected tournament (for Edit Existing - show all when round selected)
 
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', init);
@@ -264,7 +265,7 @@
       return `
       <tr>
         <td>${index + 1}</td>
-        <td style="font-weight: 600; color: #28724f;">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" class="participant-avatar" loading="lazy" />` : ''}<span class="player-name">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></td>
+        <td class="participant-cell" style="font-weight: 600; color: #28724f;">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" class="participant-avatar" loading="lazy" />` : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>'}<span class="player-name">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></td>
         <td>${escapeHtml(tournamentName)}</td>
         <td>${formatDate(p.signup_timestamp)}</td>
         <td>
@@ -355,6 +356,8 @@
         displayExistingResults(existingResultsMatches);
       }
     });
+    const existingContent = document.getElementById('existingResultsContent');
+    if (existingContent) existingContent.addEventListener('click', handleExistingResultAction);
   }
   
   async function loadResultsForm() {
@@ -428,7 +431,7 @@
       return `
       <tr data-search="${escapeHtml(searchable)}">
         <td>${index + 1}</td>
-        <td style="font-weight: 600;">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" class="participant-avatar" loading="lazy" />` : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>'}<span class="player-name">${escapeHtml(displayName(p))}</span></td>
+        <td class="participant-cell" style="font-weight: 600;">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" class="participant-avatar" loading="lazy" />` : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>'}<span class="player-name">${escapeHtml(displayName(p))}</span></td>
         <td>
           <input 
             type="number" 
@@ -634,19 +637,23 @@
       const supabase = window.supabaseConfig.supabase;
       const TABLES = window.supabaseConfig.TABLES;
 
-      const { data: matches, error } = await supabase
-        .from(TABLES.MATCHES)
-        .select('*')
-        .eq('tournament_id', tournament)
-        .order('round_number', { ascending: true });
+      const [matchesRes, participantsRes] = await Promise.all([
+        supabase.from(TABLES.MATCHES).select('*').eq('tournament_id', tournament).order('round_number', { ascending: true }),
+        supabase.from(TABLES.PARTICIPANTS).select('*').eq('tournament_id', tournament).order('roblox_username', { ascending: true })
+      ]);
+
+      const { data: matches, error } = matchesRes;
+      const { data: participants, error: participantsErr } = participantsRes;
 
       if (error) {
         console.error('❌ Error loading existing results:', error);
         alert('Error loading results: ' + error.message);
         return;
       }
+      existingResultsParticipants = participants || [];
+      if (participantsErr) console.warn('Could not load participants for edit view:', participantsErr);
 
-      console.log('📊 Found matches:', matches ? matches.length : 0);
+      console.log('📊 Found matches:', matches ? matches.length : 0, 'participants:', existingResultsParticipants.length);
 
       if (!matches || matches.length === 0) {
         existingResultsMatches = [];
@@ -678,96 +685,221 @@
   function displayExistingResults(matches) {
     const filterRound = document.getElementById('filterRound').value;
     const tbody = document.getElementById('existingResultsBody');
+    const searchInput = document.getElementById('existingResultsSearch');
+    if (searchInput) searchInput.value = '';
     tbody.innerHTML = '';
-    
-    // Flatten matches into individual result rows
-    const results = [];
-    matches.forEach(match => {
-      if (match.scores) {
+
+    const displayName = (p) => (p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username;
+
+    if (filterRound !== 'all' && existingResultsParticipants.length > 0) {
+      // Single round: show ALL participants; those with a result get placement/Update/Delete, others get Add
+      const roundNum = parseInt(filterRound, 10);
+      const match = matches.find(m => m.round_number === roundNum);
+      const resultByUsername = {};
+      if (match && match.scores) {
         Object.entries(match.scores).forEach(([username, scoreData]) => {
-          results.push({
-            matchId: match.id,
-            round: match.round_number,
-            username: username,
-            placement: scoreData.placement,
-            points: scoreData.points,
-            allScores: match.scores,
-            participantIds: match.participant_ids
-          });
+          resultByUsername[username] = { placement: scoreData.placement, points: scoreData.points, matchId: match.id };
         });
       }
-    });
-    
-    // Filter by round if selected
-    const filteredResults = filterRound === 'all' 
-      ? results 
-      : results.filter(r => r.round.toString() === filterRound);
-    
-    // Sort by round, then placement
-    filteredResults.sort((a, b) => {
-      if (a.round !== b.round) return a.round - b.round;
-      return a.placement - b.placement;
-    });
-    
-    // Render rows
-    filteredResults.forEach((result, index) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td style="text-align: center; font-weight: 600;">${result.round}</td>
-        <td style="font-weight: 600;">${escapeHtml(result.username)}</td>
-        <td style="text-align: center;">
-          <input 
-            type="number" 
-            class="form-input" 
-            style="width: 80px; text-align: center; padding: 0.25rem;" 
-            value="${result.placement}" 
-            min="1" 
-            data-match-id="${result.matchId}"
-            data-username="${escapeHtml(result.username)}"
-            data-original-placement="${result.placement}"
-          >
-        </td>
-        <td style="text-align: center; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">
-          ${result.points}
-        </td>
-        <td style="text-align: center;">
-          <button 
-            class="btn btn-sm btn-secondary" 
-            onclick="window.adminUpdateResult('${result.matchId}', '${escapeHtml(result.username)}')"
-            style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;"
-          >
-            💾 Update
-          </button>
-          <button 
-            class="btn btn-sm btn-outline" 
-            onclick="window.adminDeleteResult('${result.matchId}', '${escapeHtml(result.username)}')"
-            style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #40916c; border-color: #40916c;"
-          >
-            🗑️ Delete
-          </button>
-        </td>
-      `;
-      tbody.appendChild(row);
-    });
+      existingResultsParticipants.forEach((p) => {
+        const username = p.roblox_username || '';
+        const name = displayName(p);
+        const searchable = ((name + ' ' + username).trim()).toLowerCase();
+        const result = resultByUsername[username];
+        const hasResult = !!result;
+        const placementVal = hasResult ? result.placement : '';
+        const pointsVal = hasResult ? result.points : '—';
+        const avatarHtml = p.roblox_avatar_url
+          ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" class="participant-avatar" loading="lazy" />`
+          : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>';
+        const row = document.createElement('tr');
+        row.dataset.search = searchable;
+        row.innerHTML = `
+          <td style="text-align: center; font-weight: 600;">${roundNum}</td>
+          <td class="participant-cell" style="font-weight: 600;">${avatarHtml}<span class="player-name">${escapeHtml(name)}</span></td>
+          <td style="text-align: center;">
+            <input 
+              type="number" 
+              class="form-input existing-placement-input" 
+              style="width: 80px; text-align: center; padding: 0.25rem;" 
+              value="${placementVal}" 
+              min="1" 
+              data-match-id="${hasResult ? result.matchId : ''}"
+              data-username="${escapeHtml(username)}"
+              data-participant-id="${p.id}"
+              data-original-placement="${placementVal}"
+              data-has-result="${hasResult}"
+            >
+          </td>
+          <td style="text-align: center; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">${pointsVal}</td>
+          <td style="text-align: center;">
+            ${hasResult
+              ? `<button type="button" class="btn btn-sm btn-secondary btn-existing-update" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;">💾 Update</button>
+                 <button type="button" class="btn btn-sm btn-outline btn-existing-delete" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #40916c; border-color: #40916c;">🗑️ Delete</button>`
+              : `<button type="button" class="btn btn-sm btn-primary btn-existing-add" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">➕ Add</button>`
+            }
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    } else {
+      // All rounds: show only rows that have results (legacy behavior)
+      const results = [];
+      matches.forEach(match => {
+        if (match.scores) {
+          Object.entries(match.scores).forEach(([username, scoreData]) => {
+            results.push({
+              matchId: match.id,
+              round: match.round_number,
+              username: username,
+              placement: scoreData.placement,
+              points: scoreData.points
+            });
+          });
+        }
+      });
+      const filteredResults = filterRound === 'all' ? results : results.filter(r => r.round.toString() === filterRound);
+      filteredResults.sort((a, b) => {
+        if (a.round !== b.round) return a.round - b.round;
+        return a.placement - b.placement;
+      });
+      filteredResults.forEach((result) => {
+        const row = document.createElement('tr');
+        row.dataset.search = (result.username || '').toLowerCase();
+        row.innerHTML = `
+          <td style="text-align: center; font-weight: 600;">${result.round}</td>
+          <td style="font-weight: 600;">${escapeHtml(result.username)}</td>
+          <td style="text-align: center;">
+            <input type="number" class="form-input existing-placement-input" style="width: 80px; text-align: center; padding: 0.25rem;" value="${result.placement}" min="1"
+              data-match-id="${result.matchId}" data-username="${escapeHtml(result.username)}" data-participant-id="" data-original-placement="${result.placement}" data-has-result="true">
+          </td>
+          <td style="text-align: center; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">${result.points}</td>
+          <td style="text-align: center;">
+            <button type="button" class="btn btn-sm btn-secondary btn-existing-update" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; margin-right: 0.5rem;">💾 Update</button>
+            <button type="button" class="btn btn-sm btn-outline btn-existing-delete" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #40916c; border-color: #40916c;">🗑️ Delete</button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+    }
+
+    // Search filter: any space-separated tokens must all appear in the participant name
+    if (searchInput) {
+      searchInput.oninput = function () {
+        const tokens = searchInput.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
+        tbody.querySelectorAll('tr').forEach(tr => {
+          const text = tr.dataset.search || '';
+          tr.style.display = tokens.length === 0 || tokens.every(t => text.includes(t)) ? '' : 'none';
+        });
+      };
+    }
+  }
+
+  function handleExistingResultAction(ev) {
+    if (!ev.target.closest('#existingResultsBody')) return;
+    const btn = ev.target.closest('.btn-existing-update, .btn-existing-delete, .btn-existing-add');
+    if (!btn) return;
+    ev.preventDefault();
+    const row = btn.closest('tr');
+    const input = row && row.querySelector('.existing-placement-input');
+    const matchId = input && input.dataset.matchId;
+    const username = input && input.dataset.username;
+    const participantId = input && input.dataset.participantId;
+    const hasResult = input && input.dataset.hasResult === 'true';
+
+    if (btn.classList.contains('btn-existing-update')) {
+      const newPlacement = input ? parseInt(input.value, 10) : 0;
+      const originalPlacement = input ? parseInt(input.dataset.originalPlacement, 10) : NaN;
+      if (matchId && username) window.adminUpdateResult(matchId, username, newPlacement, originalPlacement);
+      return;
+    }
+    if (btn.classList.contains('btn-existing-delete')) {
+      if (matchId && username) window.adminDeleteResult(matchId, username);
+      return;
+    }
+    if (btn.classList.contains('btn-existing-add')) {
+      const placement = parseInt(input && input.value, 10);
+      if (!placement || placement < 1) {
+        alert('Enter a placement number (1 or higher) before clicking Add.');
+        return;
+      }
+      window.adminAddResult(participantId, username, placement);
+    }
   }
   
-  window.adminUpdateResult = async function(matchId, username) {
-    const input = document.querySelector(`input[data-match-id="${matchId}"][data-username="${escapeHtml(username)}"]`);
-    const newPlacement = parseInt(input.value);
-    const originalPlacement = parseInt(input.dataset.originalPlacement);
-    
-    if (newPlacement === originalPlacement) {
+  window.adminAddResult = async function(participantId, username, placement) {
+    const tournamentSelect = document.getElementById('resultsTournament');
+    const filterRound = document.getElementById('filterRound');
+    const tournament = tournamentSelect ? tournamentSelect.value : '';
+    const round = filterRound ? filterRound.value : '';
+    if (!tournament || !round || round === 'all') {
+      alert('Select a tournament and a specific round (not "All Rounds") to add a result.');
+      return;
+    }
+    const roundNum = parseInt(round, 10);
+    if (isNaN(roundNum) || roundNum < 1) {
+      alert('Invalid round.');
+      return;
+    }
+    const points = typeof calculatePoints === 'function' ? calculatePoints(placement) : 0;
+    try {
+      const supabase = window.supabaseConfig.supabase;
+      const TABLES = window.supabaseConfig.TABLES;
+      const match = existingResultsMatches.find(m => m.round_number === roundNum);
+      if (match && match.scores) {
+        const updatedScores = { ...match.scores };
+        updatedScores[username] = { placement, points };
+        const participantIds = Array.isArray(match.participant_ids) ? [...match.participant_ids] : [];
+        if (participantId && !participantIds.includes(participantId)) participantIds.push(participantId);
+        const { error: updateError } = await supabase
+          .from(TABLES.MATCHES)
+          .update({
+            scores: updatedScores,
+            participant_ids: participantIds.length ? participantIds : undefined
+          })
+          .eq('id', match.id);
+        if (updateError) throw updateError;
+        alert('✅ Result added successfully!');
+      } else {
+        const { error: insertError } = await supabase
+          .from(TABLES.MATCHES)
+          .insert({
+            tournament_id: tournament,
+            tournament_type: 'legacy',
+            round_number: roundNum,
+            match_number: 1,
+            participant_ids: participantId ? [participantId] : [],
+            scores: { [username]: { placement, points } },
+            completed: true,
+            completed_at: new Date().toISOString()
+          })
+          .select()
+          .single();
+        if (insertError) throw insertError;
+        alert('✅ Result added successfully!');
+      }
+      await loadExistingResults();
+    } catch (error) {
+      console.error('Error adding result:', error);
+      alert('Error adding result: ' + error.message);
+    }
+  };
+
+  window.adminUpdateResult = async function(matchId, username, newPlacementFromInput, originalPlacementFromInput) {
+    const newPlacement = typeof newPlacementFromInput === 'number' ? newPlacementFromInput : parseInt(newPlacementFromInput, 10);
+    const originalPlacement = typeof originalPlacementFromInput === 'number' ? originalPlacementFromInput : parseInt(originalPlacementFromInput, 10);
+
+    if (newPlacement === originalPlacement || (isNaN(originalPlacement) && !newPlacement)) {
       alert('No changes detected.');
       return;
     }
-    
+
     if (!newPlacement || newPlacement < 1) {
       alert('Please enter a valid placement (1 or higher).');
       return;
     }
-    
-    if (!confirm(`Update ${username}'s placement from ${originalPlacement} to ${newPlacement}?`)) {
-      input.value = originalPlacement;
+
+    if (!confirm(`Update ${username}'s placement from ${originalPlacement || '?'} to ${newPlacement}?`)) {
       return;
     }
     

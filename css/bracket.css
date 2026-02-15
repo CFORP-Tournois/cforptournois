@@ -112,6 +112,8 @@
 .participant-avatar {
   width: 28px;
   height: 28px;
+  min-width: 28px;
+  min-height: 28px;
   border-radius: 50%;
   object-fit: cover;
   vertical-align: middle;
@@ -130,6 +132,22 @@
   font-size: 1rem;
   background: var(--cf-light-gray, #f0f4f2);
   object-fit: unset;
+}
+
+/* Table cell with avatar + name: same single-line layout for all rows */
+.participant-cell {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  white-space: nowrap;
+}
+.participant-cell .participant-avatar {
+  margin-right: 0;
+}
+.participant-cell .player-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .bracket-player-inner {

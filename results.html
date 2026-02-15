@@ -594,7 +594,7 @@
       tbody.innerHTML = leaderboard.map((p, i) => `
         <tr>
           <td style="font-weight: 700;">${i + 1}</td>
-          <td style="font-weight: 600;">${p.avatarUrl ? `<img src="${escapeHtml(p.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />` : AVATAR_PLACEHOLDER}<span class="player-name">${escapeHtml(p.username)}</span></td>
+          <td class="participant-cell" style="font-weight: 600;">${p.avatarUrl ? `<img src="${escapeHtml(p.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />` : AVATAR_PLACEHOLDER}<span class="player-name">${escapeHtml(p.username)}</span></td>
           <td>—</td>
           <td style="font-weight: 700; color: #6ab04c;">${p.points}</td>
         </tr>
@@ -682,7 +682,7 @@
       tbody.innerHTML = leaderboard.map((p, i) => `
         <tr>
           <td style="font-weight: 700;">${i + 1}</td>
-          <td style="font-weight: 600;">${p.avatarUrl ? `<img src="${escapeHtml(p.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />` : AVATAR_PLACEHOLDER}<span class="player-name">${escapeHtml(p.username)}</span></td>
+          <td class="participant-cell" style="font-weight: 600;">${p.avatarUrl ? `<img src="${escapeHtml(p.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />` : AVATAR_PLACEHOLDER}<span class="player-name">${escapeHtml(p.username)}</span></td>
           <td style="font-weight: 700; color: #6ab04c;">${p.totalPoints}</td>
           <td><span class="badge ${p.madeElimination ? 'badge-success' : 'badge-info'}" data-i18n="${p.statusKey}">${escapeHtml(p.status)}</span></td>
         </tr>

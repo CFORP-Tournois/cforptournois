@@ -230,11 +230,15 @@
               <div id="existingResultsContent" class="hidden">
                 <p style="margin-bottom: 1rem; font-weight: 600;">Tournament: <span id="existingResultsTournamentName">—</span></p>
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
-                  <div style="display: flex; gap: 1rem; align-items: center;">
+                  <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
                     <label class="form-label" style="margin: 0;">Filter by Round:</label>
                     <select id="filterRound" class="form-select" style="width: auto;">
                       <option value="all">All Rounds</option>
                     </select>
+                    <div class="form-group" style="margin: 0;">
+                      <label class="form-label" for="existingResultsSearch" style="margin: 0;">Search participants</label>
+                      <input type="text" id="existingResultsSearch" class="form-input" placeholder="e.g. BLA Run 22 (matches BlaseRunner22)" style="max-width: 280px;">
+                    </div>
                   </div>
                   <button class="btn btn-secondary" id="refreshExistingBtn">🔄 Refresh</button>
                 </div>

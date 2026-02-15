@@ -571,7 +571,7 @@
                   <td style="text-align: center; font-weight: 700; font-size: 1.25rem; color: ${player.rank === 1 ? '#FFD700' : player.rank === 2 ? '#C0C0C0' : player.rank === 3 ? '#CD7F32' : '#666'};">
                     ${medalEmoji} ${rankDisplay}${player.isTied ? '<sup style="font-size: 0.6rem; margin-left: 2px;" data-i18n="bracket.tie">TIE</sup>' : ''}
                   </td>
-                  <td style="font-weight: 600; font-size: 1.125rem;">
+                  <td class="participant-cell" style="font-weight: 600; font-size: 1.125rem;">
                     ${player.avatarUrl ? `<img src="${escapeHtml(player.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />` : AVATAR_PLACEHOLDER}
                     <span class="player-name">${escapeHtml(player.username)}</span>
                   </td>
