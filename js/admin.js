@@ -353,6 +353,21 @@
       const supabase = window.supabaseConfig.supabase;
       const TABLES = window.supabaseConfig.TABLES;
       
+      // Block loading if this round already has results (avoid double-entry / wrong round)
+      const roundNum = parseInt(round, 10);
+      if (!isNaN(roundNum)) {
+        const { data: existingForRound, error: checkErr } = await supabase
+          .from(TABLES.MATCHES)
+          .select('id')
+          .eq('tournament_id', tournament)
+          .eq('round_number', roundNum)
+          .limit(1);
+        if (!checkErr && existingForRound && existingForRound.length > 0) {
+          alert(`Round ${round} already has results.\n\nUse the "Existing Results" section below to view or edit, or select a different round to enter new results.`);
+          return;
+        }
+      }
+      
       const { data: participants, error } = await supabase
         .from(TABLES.PARTICIPANTS)
         .select('*')
