@@ -11,6 +11,7 @@
   background: #f9f9f9;
   border-radius: 12px;
   margin: 2rem 0;
+  max-width: 100%;
 }
 
 .bracket {
@@ -27,6 +28,7 @@
   flex-direction: column;
   min-width: 200px;
   min-height: 200px;
+  flex-shrink: 0;
 }
 
 .bracket-round-matches {
@@ -240,9 +242,7 @@
 .participant-cell .player-name {
   font-size: 1rem;
   font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
+  white-space: nowrap;
 }
 
 .leaderboard-rank-td {
@@ -294,18 +294,34 @@
   position: relative;
 }
 
-/* Responsive design */
+/* Responsive design: stack rounds vertically on mobile so nothing overlaps */
 @media (max-width: 768px) {
   .bracket-container {
     padding: 1rem;
+    justify-content: flex-start;
+    overflow-x: visible;
+    overflow-y: visible;
   }
   
   .bracket {
+    flex-direction: column;
+    align-items: center;
     gap: 2rem;
+    width: 100%;
+    min-width: 0;
   }
   
   .bracket-round {
-    min-width: 180px;
+    min-width: 0;
+    width: 100%;
+    max-width: 360px;
+  }
+  
+  .bracket-round-third,
+  .bracket-round-final {
+    width: 100%;
+    min-width: 0;
+    max-width: 360px;
   }
   
   .bracket-round-title {
@@ -315,6 +331,10 @@
   .bracket-player {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
+  }
+  
+  .bracket-match {
+    min-width: 0;
   }
 }
 

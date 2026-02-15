@@ -32,8 +32,8 @@
   const ROW_AVATAR_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:block;flex-shrink:0';
   const ROW_PLACEHOLDER_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;background:#e8ece9;flex-shrink:0';
   const ROW_CELL_STYLE = 'vertical-align:middle;padding:12px 16px;height:48px;max-height:48px;box-sizing:border-box;';
-  const ROW_CELL_INNER_STYLE = 'display:flex;align-items:center;gap:8px;overflow:hidden;min-width:0;';
-  const ROW_NAME_STYLE = 'font-size:1rem;font-weight:600;overflow:hidden;text-overflow:ellipsis;min-width:0;';
+  const ROW_CELL_INNER_STYLE = 'display:flex;align-items:center;gap:8px;min-width:0;';
+  const ROW_NAME_STYLE = 'font-size:1rem;font-weight:600;white-space:nowrap;';
 
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', init);

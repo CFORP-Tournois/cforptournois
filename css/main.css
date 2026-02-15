@@ -614,24 +614,29 @@ a:focus-visible {
   box-sizing: border-box;
   overflow: hidden;
 }
-/* Participant (name) column: keep visible on mobile so names don't collapse under fixed layout */
+/* Participant (name) column: wide enough for full names; scroll to see points if needed */
 .table th:nth-child(2),
 .table td:nth-child(2) {
-  min-width: 100px;
+  min-width: 180px;
+  overflow: visible;
+}
+/* Allow participant name to show in full (no ellipsis) */
+.table td:nth-child(2) .participant-cell-inner {
+  overflow: visible;
 }
 @media (max-width: 768px) {
   .table th:nth-child(2),
   .table td:nth-child(2) {
-    min-width: 120px;
+    min-width: 200px;
   }
-  /* Bracket page leaderboard: ensure participant column stays visible with horizontal scroll */
+  /* Bracket page leaderboard: participant column wide for full names */
   .table.leaderboard-table th:nth-child(2),
   .table.leaderboard-table td:nth-child(2) {
-    min-width: 140px;
+    min-width: 200px;
   }
   /* Results page Full Standings: force horizontal scroll so participant names stay visible */
   .table.standings-table {
-    min-width: 420px;
+    min-width: 480px;
   }
 }
 
