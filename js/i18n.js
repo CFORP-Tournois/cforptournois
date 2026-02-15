@@ -166,6 +166,8 @@ const translations = {
       round: "Ronde",
       group: "Groupe",
       allGroups: "Tous les groupes",
+      rankInGroup: "Rang dans le groupe",
+      ranksInGroupNote: "Les rangs affichés sont ceux du groupe sélectionné.",
       
       // Empty State
       noParticipants: "Aucun participant inscrit",
@@ -470,6 +472,8 @@ const translations = {
       round: "Round",
       group: "Group",
       allGroups: "All groups",
+      rankInGroup: "Rank in group",
+      ranksInGroupNote: "Ranks shown are within the selected group.",
       
       // Empty State
       noParticipants: "No participants registered",

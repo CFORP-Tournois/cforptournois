@@ -233,6 +233,11 @@
       await loadTournaments();
     });
 
+    function effectiveNumGroupsFrom(participantsList) {
+      if (!participantsList || participantsList.length === 0) return 1;
+      return Math.max(1, Math.max.apply(null, participantsList.map(function(p) { return p.group_number != null ? p.group_number : 1; })));
+    }
+
     function getFilteredResultsParticipants() {
       if (!resultsParticipants.length) return resultsParticipants;
       if (resultsGroupFilter === 'all') return resultsParticipants;
@@ -435,8 +440,8 @@
           resultsTournamentObj = tournamentObj;
           resultsBracketData = null;
           resultsViewMode = 'no-bracket';
-          const numGroups = Math.max(1, tournamentObj.number_of_groups || 1);
-          if (numGroups > 1) setupResultsGroupFilter(numGroups); else hideResultsGroupFilter();
+          const effectiveNumGroups = effectiveNumGroupsFrom(resultsParticipants);
+          if (effectiveNumGroups > 1) setupResultsGroupFilter(effectiveNumGroups); else hideResultsGroupFilter();
           document.getElementById('loadingState').classList.add('hidden');
           document.getElementById('resultsContent').classList.remove('hidden');
           document.getElementById('podiumSection').classList.add('hidden');
@@ -479,8 +484,8 @@
           const bracketData = await loadAndDisplayBracketOnResults(tournamentObj);
           resultsBracketData = bracketData || [];
           resultsViewMode = bracketStyle === 'mixed' ? 'mixed' : 'scoreboard';
-          const numGroups = Math.max(1, tournamentObj.number_of_groups || 1);
-          if (numGroups > 1) setupResultsGroupFilter(numGroups); else hideResultsGroupFilter();
+          const effectiveNumGroups = effectiveNumGroupsFrom(resultsParticipants);
+          if (effectiveNumGroups > 1) setupResultsGroupFilter(effectiveNumGroups); else hideResultsGroupFilter();
           const fullStandingsEl = document.getElementById('fullStandingsSection');
           if (bracketStyle === 'head-to-head') {
             if (fullStandingsEl) fullStandingsEl.classList.add('hidden');
@@ -506,8 +511,8 @@
           resultsBracketStyle = 'scoreboard';
           resultsBracketData = null;
           resultsViewMode = 'scoreboard';
-          const numGroups = Math.max(1, tournamentObj.number_of_groups || 1);
-          if (numGroups > 1) setupResultsGroupFilter(numGroups); else hideResultsGroupFilter();
+          const effectiveNumGroups = effectiveNumGroupsFrom(resultsParticipants);
+          if (effectiveNumGroups > 1) setupResultsGroupFilter(effectiveNumGroups); else hideResultsGroupFilter();
           document.getElementById('fullStandingsSection')?.classList.remove('hidden');
           if (matches && matches.length > 0) {
             displayScoreboardResults(matches, tournamentObj, getFilteredResultsParticipants());

@@ -169,9 +169,11 @@
     loadTournamentData(tournament);
   }
   
-  // Listen for language changes
+  // Listen for language changes (re-build dropdowns so Group / View options are in new language)
   window.addEventListener('languageChanged', () => {
     if (tournaments.length > 0) {
+      const savedGroup = currentGroupFilter;
+      const savedRound = currentRoundFilter;
       renderTournamentTabs();
       if (currentTournament) {
         const activeTab = document.querySelector(`[data-tournament="${currentTournament}"]`);
@@ -179,6 +181,23 @@
           activeTab.classList.add('active');
         }
         updateTournamentInfo(currentParticipants);
+      }
+      const effectiveNum = currentParticipants.length ? Math.max(1, ...currentParticipants.map(p => (p.group_number != null ? p.group_number : 1))) : 1;
+      if (effectiveNum > 1) {
+        setupGroupFilter(effectiveNum);
+        const groupSelect = document.getElementById('groupFilter');
+        if (groupSelect) {
+          groupSelect.value = savedGroup;
+          currentGroupFilter = savedGroup;
+        }
+      }
+      if (currentMatches && currentMatches.length > 0) {
+        setupRoundFilter(currentMatches);
+        const roundSelect = document.getElementById('roundFilter');
+        if (roundSelect) {
+          roundSelect.value = savedRound;
+          currentRoundFilter = savedRound;
+        }
       }
       if (window.i18n && window.i18n.updateAllText) {
         window.i18n.updateAllText();
@@ -211,7 +230,6 @@
         return;
       }
       currentTournamentObj = tournamentObj;
-      const numGroups = Math.max(1, tournamentObj.number_of_groups || 1);
       currentGroupFilter = 'all';
 
       // Clear bracket immediately when switching tournaments (only re-show if this one has bracket)
@@ -242,6 +260,10 @@
       // Store participants globally
       currentParticipants = participants;
 
+      // Effective number of groups = max group_number actually present (dropdown only shows groups that have participants)
+      const maxGroupInList = Math.max(1, ...participants.map(p => p.group_number != null ? p.group_number : 1));
+      const effectiveNumGroups = maxGroupInList;
+
       // Fetch match results for leaderboard using tournament_id
       console.log('🔍 Fetching matches for tournament_id:', tournamentObj.id);
       const { data: matches, error: matchError } = await supabase
@@ -261,10 +283,15 @@
 
       const bracketStyle = (tournamentObj.bracket_style || 'scoreboard').toLowerCase();
 
+      // If current group selection is no longer valid (e.g. had Group 3, now only 2 groups), reset to all
+      if (currentGroupFilter !== 'all' && parseInt(currentGroupFilter, 10) > effectiveNumGroups) {
+        currentGroupFilter = 'all';
+      }
+
       // No-bracket: always show only participants list (no leaderboard, no bracket tree)
       if (bracketStyle === 'no-bracket') {
         hideRoundFilter();
-        if (numGroups > 1) setupGroupFilter(numGroups); else hideGroupFilter();
+        if (effectiveNumGroups > 1) setupGroupFilter(effectiveNumGroups); else hideGroupFilter();
         displayParticipants(getFilteredParticipants());
         clearBracketSection();
         return;
@@ -275,13 +302,13 @@
         console.log('✅ Displaying leaderboard with', matches.length, 'matches');
         currentRoundFilter = 'overall';
         setupRoundFilter(matches);
-        if (numGroups > 1) setupGroupFilter(numGroups); else hideGroupFilter();
+        if (effectiveNumGroups > 1) setupGroupFilter(effectiveNumGroups); else hideGroupFilter();
         displayLeaderboard(getFilteredParticipants(), matches, 'overall');
       } else {
         // No results yet: hide round dropdown and show participant list only
         console.log('ℹ️ No matches found - showing participant list');
         hideRoundFilter();
-        if (numGroups > 1) setupGroupFilter(numGroups); else hideGroupFilter();
+        if (effectiveNumGroups > 1) setupGroupFilter(effectiveNumGroups); else hideGroupFilter();
         displayParticipants(getFilteredParticipants());
       }
 
@@ -574,8 +601,7 @@
     const filterSelect = document.getElementById('roundFilter');
     if (!filterContainer || !filterSelect) return;
     currentRoundFilter = 'overall';
-    const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
-    const overallText = translations[currentLang].bracket.overallStandings;
+    const overallText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.overallStandings') : 'Overall Standings';
     filterSelect.innerHTML = `<option value="overall">${overallText}</option>`;
     filterContainer.classList.add('hidden');
   }
@@ -587,9 +613,8 @@
     const filterSelect = document.getElementById('roundFilter');
     if (!filterSelect || !filterContainer) return;
 
-    const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
-    const roundText = translations[currentLang].bracket.round;
-    const overallText = translations[currentLang].bracket.overallStandings;
+    const roundText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.round') : 'Round';
+    const overallText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.overallStandings') : 'Overall Standings';
 
     filterSelect.innerHTML = `<option value="overall">${overallText}</option>`;
     rounds.forEach(round => {
@@ -598,7 +623,7 @@
       option.textContent = `${roundText} ${round}`;
       filterSelect.appendChild(option);
     });
-    filterSelect.value = 'overall';
+    filterSelect.value = currentRoundFilter;
     filterContainer.classList.remove('hidden');
   }
 
@@ -674,14 +699,18 @@
     document.getElementById('participantCountDisplay').textContent = participants.length;
     document.getElementById('participantNumber').textContent = participants.length;
 
+    const isGroupView = currentGroupFilter !== 'all';
+    const rankHeaderText = (window.i18n && window.i18n.t) ? (isGroupView ? window.i18n.t('bracket.rankInGroup') : window.i18n.t('bracket.rank')) : (isGroupView ? 'Rank in group' : 'Rank');
+    const rankNoteText = isGroupView && (window.i18n && window.i18n.t) ? window.i18n.t('bracket.ranksInGroupNote') : '';
     // Generate leaderboard table
     const participantsList = document.getElementById('participantsList');
     participantsList.innerHTML = `
+      ${rankNoteText ? `<p class="leaderboard-group-note" style="margin: 0 0 0.75rem 0; font-size: 0.875rem; color: #666;">${escapeHtml(rankNoteText)}</p>` : ''}
       <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow-x: auto; overflow-y: visible;">
         <table class="table leaderboard-table" style="margin: 0; min-width: 620px;">
           <thead>
             <tr>
-              <th style="width: 100px; min-width: 100px; text-align: center;"><span data-i18n="bracket.rank">Rang</span></th>
+              <th style="width: 100px; min-width: 100px; text-align: center;">${escapeHtml(rankHeaderText)}</th>
               <th><span data-i18n="bracket.participant">Participant</span></th>
               <th style="width: 120px; text-align: center;"><span data-i18n="bracket.rounds">Rondes</span></th>
               <th style="width: 120px; text-align: center;"><span data-i18n="bracket.points">Points</span></th>
