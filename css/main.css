@@ -626,6 +626,13 @@ a:focus-visible {
   border-bottom: none;
 }
 
+/* Compact inputs inside table cells so row height stays consistent */
+.table .form-input.existing-placement-input {
+  min-height: 32px;
+  padding: 6px 8px;
+  font-size: 0.9375rem;
+}
+
 .table tbody tr:hover {
   background-color: var(--cf-light-gray);
 }

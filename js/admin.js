@@ -724,13 +724,13 @@
         const row = document.createElement('tr');
         row.dataset.search = searchable;
         row.innerHTML = `
-          <td style="text-align: center; font-weight: 600; vertical-align: middle; padding: 12px 16px; min-height: 48px;">${roundNum}</td>
+          <td style="text-align: center; font-weight: 600; vertical-align: middle; padding: 12px 16px; height: 48px; box-sizing: border-box;">${roundNum}</td>
           <td style="${ROW_CELL_STYLE}"><div class="participant-cell-inner" style="${ROW_CELL_INNER_STYLE}">${avatarHtml}<span style="${ROW_NAME_STYLE}">${escapeHtml(name)}</span></div></td>
-          <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px;">
+          <td style="text-align: center; vertical-align: middle; padding: 12px 16px; height: 48px; box-sizing: border-box;">
             <input 
               type="number" 
               class="form-input existing-placement-input" 
-              style="width: 80px; text-align: center; padding: 0.25rem;" 
+              style="width: 80px; text-align: center;" 
               value="${placementVal}" 
               min="1" 
               data-match-id="${hasResult ? result.matchId : ''}"
@@ -740,12 +740,14 @@
               data-has-result="${hasResult}"
             >
           </td>
-          <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">${pointsVal}</td>
-          <td class="existing-results-actions-cell" style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px;">
+          <td style="text-align: center; vertical-align: middle; padding: 12px 16px; height: 48px; box-sizing: border-box; font-weight: 600; color: #6ab04c; font-size: 1.125rem;">${pointsVal}</td>
+          <td class="existing-results-actions-cell" style="text-align: center; vertical-align: middle; padding: 12px 16px; height: 48px; box-sizing: border-box;">
+            <div class="existing-results-actions-inner">
             ${hasResult
               ? `<button type="button" class="btn btn-sm btn-secondary btn-existing-update" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">💾 Update</button><button type="button" class="btn btn-sm btn-outline btn-existing-delete" style="padding: 0.25rem 0.75rem; font-size: 0.875rem; color: #40916c; border-color: #40916c;">🗑️ Delete</button>`
               : `<button type="button" class="btn btn-sm btn-primary btn-existing-add" style="padding: 0.25rem 0.75rem; font-size: 0.875rem;">➕ Add</button>`
             }
+            </div>
           </td>
         `;
         tbody.appendChild(row);

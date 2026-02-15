@@ -251,7 +251,7 @@
                       <th>Participant</th>
                       <th style="width: 120px;">Placement</th>
                       <th style="width: 120px;">Points</th>
-                      <th style="width: 150px;">Actions</th>
+                      <th style="width: 200px;">Actions</th>
                     </tr>
                   </thead>
                   <tbody id="existingResultsBody">
@@ -674,13 +674,15 @@
       margin: 0;
     }
     
-    /* Edit Existing Results: Actions column only (avatar/name use bracket.css) */
+    /* Edit Existing Results: Actions column – flex on inner wrapper so td keeps table layout */
     #existingResultsBody .existing-results-actions-cell {
+      white-space: nowrap;
+    }
+    #existingResultsBody .existing-results-actions-inner {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
       flex-wrap: nowrap;
-      min-height: 32px;
     }
     
     /* Modal Styles */
