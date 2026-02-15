@@ -27,6 +27,10 @@
       refreshViewAfterGroupChange();
     });
 
+    window.addEventListener('languageChanged', function() {
+      refreshBracketDynamicText();
+    });
+
     // Load tournaments first
     await loadTournaments();
     
@@ -585,15 +589,30 @@
     const container = document.getElementById('groupFilterContainer');
     const select = document.getElementById('groupFilter');
     if (!container || !select) return;
-    const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
     const allText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.allGroups') : 'All groups';
     const groupText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.group') : 'Group';
     select.innerHTML = `<option value="all">${allText}</option>` +
       Array.from({ length: Math.max(1, numberOfGroups) }, (_, i) => i + 1)
         .map(n => `<option value="${n}">${groupText} ${n}</option>`).join('');
-    select.value = 'all';
-    currentGroupFilter = 'all';
+    const saved = currentGroupFilter;
+    select.value = (saved === 'all' || (parseInt(saved, 10) >= 1 && parseInt(saved, 10) <= numberOfGroups)) ? saved : 'all';
+    currentGroupFilter = select.value;
     container.classList.remove('hidden');
+  }
+
+  function refreshBracketDynamicText() {
+    if (!currentParticipants || currentParticipants.length === 0) return;
+    const effectiveNum = Math.max(1, ...currentParticipants.map(p => (p.group_number != null ? p.group_number : 1)));
+    if (effectiveNum > 1) setupGroupFilter(effectiveNum); else hideGroupFilter();
+    const participantsSection = document.getElementById('participantsSection');
+    const leaderboardSection = document.getElementById('leaderboardSection');
+    if (participantsSection && !participantsSection.classList.contains('hidden')) {
+      displayParticipants(currentParticipants);
+    }
+    if (leaderboardSection && !leaderboardSection.classList.contains('hidden') && currentMatches && currentMatches.length > 0) {
+      setupRoundFilter(currentMatches);
+      displayLeaderboard(getFilteredParticipants(), currentMatches, currentRoundFilter);
+    }
   }
 
   function hideRoundFilter() {

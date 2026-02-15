@@ -230,6 +230,11 @@
         resultsGroupFilter = this.value;
         refreshResultsView();
       });
+      window.addEventListener('languageChanged', function() {
+        const n = effectiveNumGroupsFrom(resultsParticipants);
+        if (n > 1) setupResultsGroupFilter(n);
+        refreshResultsView();
+      });
       await loadTournaments();
     });
 
@@ -254,9 +259,10 @@
       const allText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.allGroups') : 'All groups';
       select.innerHTML = '<option value="all">' + allText + '</option>' +
         Array.from({ length: Math.max(1, numberOfGroups) }, (_, i) => i + 1)
-          .map(n => '<option value="' + n + '">' + groupText + ' ' + n + '</option>').join('');
-      select.value = 'all';
-      resultsGroupFilter = 'all';
+          .map(function(g) { return '<option value="' + g + '">' + groupText + ' ' + g + '</option>'; }).join('');
+      var saved = resultsGroupFilter;
+      select.value = (saved === 'all' || (parseInt(saved, 10) >= 1 && parseInt(saved, 10) <= numberOfGroups)) ? saved : 'all';
+      resultsGroupFilter = select.value;
       container.classList.remove('hidden');
     }
 
