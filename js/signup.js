@@ -366,7 +366,6 @@
     }
 
     // Auto-split groups (server-side so updates succeed; client-side updates may be blocked by RLS)
-    const supabase = window.supabaseConfig.supabase;
     supabase.functions.invoke('auto-split-groups', { body: { tournament_id: formData.tournamentId } })
       .then(({ error }) => { if (error) console.warn('Auto-split after signup:', error); })
       .catch(err => console.warn('Auto-split after signup:', err));
