@@ -417,7 +417,7 @@
   function renderParticipantWithAvatar(display, fallback) {
     const name = display.name || fallback || 'TBD';
     const avatar = display.avatarUrl
-      ? `<img src="${escapeHtml(display.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
+      ? `<img width="32" height="32" src="${escapeHtml(display.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
       : AVATAR_PLACEHOLDER;
     return `${avatar}<span style="${ROW_NAME_STYLE}">${escapeHtml(name)}</span>`;
   }
@@ -578,7 +578,7 @@
                     ${medalEmoji} ${rankLabel}${tieSup}
                   </td>
                   <td style="${ROW_CELL_STYLE}">
-                    ${player.avatarUrl ? `<img src="${escapeHtml(player.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : AVATAR_PLACEHOLDER}
+                    ${player.avatarUrl ? `<img width="32" height="32" src="${escapeHtml(player.avatarUrl)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : AVATAR_PLACEHOLDER}
                     <span style="${ROW_NAME_STYLE}">${escapeHtml(player.username)}</span>
                   </td>
                   <td style="text-align: center; vertical-align: middle; padding: 12px 16px; min-height: 48px; color: #666;">
@@ -628,7 +628,7 @@
   function createParticipantCard(participant, number) {
     const displayName = (participant.roblox_display_name || participant.roblox_username || '').trim() || participant.roblox_username;
     const avatarHtml = participant.roblox_avatar_url
-      ? `<img src="${escapeHtml(participant.roblox_avatar_url)}" alt="" class="participant-avatar participant-avatar-img" loading="lazy" />`
+      ? `<img width="80" height="80" src="${escapeHtml(participant.roblox_avatar_url)}" alt="" class="participant-avatar participant-avatar-img" loading="lazy" style="border-radius:50%;object-fit:cover;display:block;" />`
       : '<div class="participant-avatar participant-avatar-placeholder">🎮</div>';
     const card = document.createElement('div');
     card.className = 'participant-card';

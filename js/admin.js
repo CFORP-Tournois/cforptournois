@@ -271,7 +271,7 @@
       return `
       <tr>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${index + 1}</td>
-        <td style="${ROW_CELL_STYLE} color: #28724f;">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></td>
+        <td style="${ROW_CELL_STYLE} color: #28724f;">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml((p.roblox_display_name || p.roblox_username || '').trim() || p.roblox_username)}</span></td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${escapeHtml(tournamentName)}</td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${formatDate(p.signup_timestamp)}</td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
@@ -437,7 +437,7 @@
       return `
       <tr data-search="${escapeHtml(searchable)}">
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">${index + 1}</td>
-        <td style="${ROW_CELL_STYLE}">${p.roblox_avatar_url ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml(displayName(p))}</span></td>
+        <td style="${ROW_CELL_STYLE}">${p.roblox_avatar_url ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />` : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`}<span style="${ROW_NAME_STYLE}">${escapeHtml(displayName(p))}</span></td>
         <td style="vertical-align:middle;padding:12px 16px;min-height:48px;">
           <input 
             type="number" 
@@ -718,7 +718,7 @@
         const placementVal = hasResult ? result.placement : '';
         const pointsVal = hasResult ? result.points : '—';
         const avatarHtml = p.roblox_avatar_url
-          ? `<img src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
+          ? `<img width="32" height="32" src="${escapeHtml(p.roblox_avatar_url)}" alt="" loading="lazy" style="${ROW_AVATAR_STYLE}" />`
           : `<div style="${ROW_PLACEHOLDER_STYLE}">🎮</div>`;
         const row = document.createElement('tr');
         row.dataset.search = searchable;

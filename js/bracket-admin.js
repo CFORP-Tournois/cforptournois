@@ -722,13 +722,15 @@
     return String(unsafe).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
   }
 
-  const AVATAR_PLACEHOLDER = '<div class="participant-avatar participant-avatar-placeholder">🎮</div>';
+  const ROW_AVATAR_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:block;flex-shrink:0';
+  const ROW_PLACEHOLDER_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;font-size:1rem;background:#e8ece9;flex-shrink:0';
+  const AVATAR_PLACEHOLDER = '<div style="' + ROW_PLACEHOLDER_STYLE + '">🎮</div>';
   function renderParticipantWithAvatar(display, fallback) {
     const name = display.name || fallback || 'TBD';
     const avatar = display.avatarUrl
-      ? `<img src="${escapeHtml(display.avatarUrl)}" alt="" class="participant-avatar" loading="lazy" />`
+      ? '<img width="32" height="32" src="' + escapeHtml(display.avatarUrl) + '" alt="" loading="lazy" style="' + ROW_AVATAR_STYLE + '" />'
       : AVATAR_PLACEHOLDER;
-    return `${avatar}<span class="player-name">${escapeHtml(name)}</span>`;
+    return avatar + '<span class="player-name">' + escapeHtml(name) + '</span>';
   }
 
   function renderMatch(match) {
