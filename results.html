@@ -955,6 +955,28 @@
       display: none;
     }
 
+    /* Podium cards: all content centered */
+    .podium-card {
+      text-align: center;
+    }
+    .podium-card h3,
+    .podium-card p {
+      text-align: center;
+    }
+    /* Avatar + username row centered (bracket populates these with img + text) */
+    .podium-card [id$="-username"] {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .podium-card [id$="-username"] .participant-avatar {
+      margin: 0;
+    }
+
     /* Desktop: podium order 2nd, 1st, 3rd (left, center, right) */
     .podium-2nd { order: 1; }
     .podium-1st { order: 2; }
