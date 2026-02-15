@@ -1,7 +1,10 @@
 // Supabase Edge Function: run auto-split for a tournament (assign group_number by signup order, respect max_participants_per_group).
-// Called from signup page and admin with the anon key (same as Roblox function). Deploy with --no-verify-jwt so unauthenticated requests are allowed.
+// Called the same way as the Roblox function: supabase.functions.invoke('auto-split-groups', { body: { tournament_id } }) with the anon key.
 // Deploy: supabase functions deploy auto-split-groups --no-verify-jwt
-// Set secret: supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
+// Set secret: supabase secrets set SUPABASE_SERVICE_ROLE_KEY=your_service_role_key (same as Roblox function).
+// If you get 500: check Supabase Dashboard → Edge Functions → auto-split-groups → Logs for the real error. Common causes:
+// - Missing secret → set SUPABASE_SERVICE_ROLE_KEY in Project Settings → Edge Functions → Secrets.
+// - Missing DB columns → run scripts/ADD_GROUP_COLUMNS.sql and scripts/ADD_MAX_PARTICIPANTS_PER_GROUP.sql in SQL Editor.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
@@ -142,7 +145,7 @@ Deno.serve(async (req) => {
       await supabase.from('tournaments').update({ status: 'at_capacity' }).eq('id', tournamentId);
     }
 
-    return json({ ok: true, num_groups, count: participants.length });
+    return json({ ok: true, num_groups: numGroups, count: participants.length });
   } catch (e) {
     const message = e instanceof Error ? e.message : String(e);
     console.error('auto-split-groups error:', e);

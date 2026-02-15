@@ -25,8 +25,9 @@
   let isAuthenticated = false;
   let currentParticipants = [];
   let adminTournaments = []; // Store tournaments for admin operations
-  let existingResultsMatches = []; // Store matches for "Existing Results" so round filter doesn't reload and reset
-  let existingResultsParticipants = []; // All participants for selected tournament (for Edit Existing - show all when round selected)
+  let existingResultsMatches = []; // All matches for selected tournament
+  let existingResultsParticipantsAll = []; // All participants for selected tournament (unfiltered)
+  let existingResultsParticipants = []; // Participants to show in Edit Existing (filtered by group when group selected)
 
   // Inline styles so participant rows look the same everywhere (no reliance on CSS load order)
   const ROW_AVATAR_STYLE = 'width:32px;height:32px;min-width:32px;min-height:32px;border-radius:50%;object-fit:cover;border:2px solid rgba(0,0,0,0.1);box-sizing:border-box;display:block;flex-shrink:0';
@@ -447,8 +448,9 @@
         if (!tid || tid === 'all') return;
         recalcGroupsBtn.disabled = true;
         try {
-          const { error } = await window.supabaseConfig.supabase.functions.invoke('auto-split-groups', { body: { tournament_id: tid } });
+          const { data, error } = await window.supabaseConfig.supabase.functions.invoke('auto-split-groups', { body: { tournament_id: tid } });
           if (error) console.warn('Recalculate groups:', error);
+          if (data && (data.error || data.detail)) console.warn('Recalculate groups response:', data.error || '', data.detail || '');
           await loadParticipants();
         } finally {
           recalcGroupsBtn.disabled = false;
@@ -457,21 +459,63 @@
     }
     
     // Existing results management
-    document.getElementById('resultsTournament').addEventListener('change', loadExistingResults);
+    document.getElementById('resultsTournament').addEventListener('change', () => {
+      updateResultsGroupDropdowns();
+      loadExistingResults();
+    });
     document.getElementById('refreshExistingBtn').addEventListener('click', loadExistingResults);
     document.getElementById('filterRound').addEventListener('change', () => {
-      // Re-display only; do not reload (reload rebuilds dropdown and resets to "All")
       if (existingResultsMatches.length > 0) {
         displayExistingResults(existingResultsMatches);
       }
+    });
+    const filterResultsGroupEl = document.getElementById('filterResultsGroup');
+    if (filterResultsGroupEl) filterResultsGroupEl.addEventListener('change', () => {
+      const filterGroupVal = filterResultsGroupEl.value;
+      const groupFilter = filterGroupVal !== '' ? parseInt(filterGroupVal, 10) : null;
+      const matchesToUse = groupFilter != null
+        ? existingResultsMatches.filter(m => (m.group_number != null ? m.group_number : 1) === groupFilter)
+        : existingResultsMatches;
+      existingResultsParticipants = groupFilter != null
+        ? existingResultsParticipantsAll.filter(p => (p.group_number != null ? p.group_number : 1) === groupFilter)
+        : existingResultsParticipantsAll;
+      displayExistingResults(matchesToUse);
     });
     const existingContent = document.getElementById('existingResultsContent');
     if (existingContent) existingContent.addEventListener('click', handleExistingResultAction);
   }
   
+  function updateResultsGroupDropdowns() {
+    const tid = document.getElementById('resultsTournament').value;
+    const newWrap = document.getElementById('resultsNewGroupWrap');
+    const newSelect = document.getElementById('resultsGroup');
+    const existingWrap = document.getElementById('existingResultsGroupWrap');
+    const existingSelect = document.getElementById('filterResultsGroup');
+    const t = tid ? adminTournaments.find(x => x.id === tid) : null;
+    const numGroups = t && t.number_of_groups != null && t.number_of_groups >= 1 ? parseInt(t.number_of_groups, 10) : 1;
+    if (numGroups > 1) {
+      if (newWrap) newWrap.style.display = '';
+      if (newSelect) {
+        newSelect.innerHTML = Array.from({ length: numGroups }, (_, i) => i + 1).map(n => `<option value="${n}">Group ${n}</option>`).join('');
+      }
+      if (existingWrap) existingWrap.style.display = '';
+      if (existingSelect) {
+        const current = existingSelect.value;
+        existingSelect.innerHTML = '<option value="">All groups</option>' + Array.from({ length: numGroups }, (_, i) => i + 1).map(n => `<option value="${n}">Group ${n}</option>`).join('');
+        if (current && parseInt(current, 10) <= numGroups) existingSelect.value = current;
+      }
+    } else {
+      if (newWrap) newWrap.style.display = 'none';
+      if (existingWrap) existingWrap.style.display = 'none';
+      if (newSelect) newSelect.innerHTML = '<option value="1">Group 1</option>';
+      if (existingSelect) existingSelect.innerHTML = '<option value="">All groups</option><option value="1">Group 1</option>';
+    }
+  }
+
   async function loadResultsForm() {
     const tournament = document.getElementById('resultsTournament').value;
     const round = document.getElementById('resultsRound').value;
+    const groupNum = parseInt(document.getElementById('resultsGroup')?.value || '1', 10) || 1;
     
     if (!tournament) {
       alert('Please select a tournament first');
@@ -480,7 +524,6 @@
     
     try {
       if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
-        // Demo mode
         loadDemoResultsForm();
         return;
       }
@@ -488,17 +531,16 @@
       const supabase = window.supabaseConfig.supabase;
       const TABLES = window.supabaseConfig.TABLES;
       
-      // Block loading if this round already has results (avoid double-entry / wrong round)
       const roundNum = parseInt(round, 10);
       if (!isNaN(roundNum)) {
-        const { data: existingForRound, error: checkErr } = await supabase
+        const { data: existingMatches, error: checkErr } = await supabase
           .from(TABLES.MATCHES)
-          .select('id')
+          .select('id, group_number')
           .eq('tournament_id', tournament)
-          .eq('round_number', roundNum)
-          .limit(1);
-        if (!checkErr && existingForRound && existingForRound.length > 0) {
-          alert(`Round ${round} already has results.\n\nUse the "Existing Results" section below to view or edit, or select a different round to enter new results.`);
+          .eq('round_number', roundNum);
+        const hasResultForGroup = !checkErr && existingMatches && existingMatches.some(m => (m.group_number != null ? m.group_number : 1) === groupNum);
+        if (hasResultForGroup) {
+          alert(`Round ${round}${groupNum > 1 ? ' (Group ' + groupNum + ')' : ''} already has results.\n\nUse "Edit Existing Results" to view or edit, or pick a different round/group.`);
           return;
         }
       }
@@ -507,6 +549,7 @@
         .from(TABLES.PARTICIPANTS)
         .select('*')
         .eq('tournament_id', tournament)
+        .eq('group_number', groupNum)
         .order('roblox_username', { ascending: true });
       
       if (error) {
@@ -621,6 +664,7 @@
   async function saveResults() {
     const round = document.getElementById('resultsRound').value;
     const tournament = document.getElementById('resultsTournament').value;
+    const groupNum = parseInt(document.getElementById('resultsGroup')?.value || '1', 10) || 1;
     
     // Collect all placements
     const results = [];
@@ -668,9 +712,10 @@
         .from(TABLES.MATCHES)
         .insert({
           tournament_id: tournament,
-          tournament_type: 'legacy', // Keep for backwards compatibility
+          tournament_type: 'legacy',
           round_number: parseInt(round),
-          match_number: 1, // For FFA, all participants in one match
+          group_number: groupNum,
+          match_number: 1,
           participant_ids: results.map(r => r.participantId),
           scores: results.reduce((acc, r) => {
             acc[r.username] = {
@@ -759,10 +804,10 @@
         alert('Error loading results: ' + error.message);
         return;
       }
-      existingResultsParticipants = participants || [];
+      existingResultsParticipantsAll = participants || [];
       if (participantsErr) console.warn('Could not load participants for edit view:', participantsErr);
 
-      console.log('📊 Found matches:', matches ? matches.length : 0, 'participants:', existingResultsParticipants.length);
+      console.log('📊 Found matches:', matches ? matches.length : 0, 'participants:', existingResultsParticipantsAll.length);
 
       if (!matches || matches.length === 0) {
         existingResultsMatches = [];
@@ -775,8 +820,16 @@
 
       if (noResultsEl) noResultsEl.classList.add('hidden');
       existingResultsMatches = matches;
+      const filterGroupVal = document.getElementById('filterResultsGroup')?.value || '';
+      const groupFilter = filterGroupVal !== '' ? parseInt(filterGroupVal, 10) : null;
+      const matchesToUse = groupFilter != null
+        ? matches.filter(m => (m.group_number != null ? m.group_number : 1) === groupFilter)
+        : matches;
+      existingResultsParticipants = groupFilter != null
+        ? (participants || []).filter(p => (p.group_number != null ? p.group_number : 1) === groupFilter)
+        : (participants || []);
 
-      const rounds = [...new Set(matches.map(m => m.round_number))].sort((a, b) => a - b);
+      const rounds = [...new Set(matchesToUse.map(m => m.round_number))].sort((a, b) => a - b);
       const filterRound = document.getElementById('filterRound');
       const currentFilter = filterRound.value;
       filterRound.innerHTML = '<option value="">Select round</option>' +
@@ -787,7 +840,7 @@
         filterRound.value = '';
       }
 
-      displayExistingResults(matches);
+      displayExistingResults(matchesToUse);
     } catch (error) {
       console.error('Error loading existing results:', error);
     }
@@ -905,8 +958,10 @@
   window.adminAddResult = async function(participantId, username, placement) {
     const tournamentSelect = document.getElementById('resultsTournament');
     const filterRound = document.getElementById('filterRound');
+    const filterGroupEl = document.getElementById('filterResultsGroup');
     const tournament = tournamentSelect ? tournamentSelect.value : '';
     const round = filterRound ? filterRound.value : '';
+    const groupNum = filterGroupEl && filterGroupEl.value !== '' ? parseInt(filterGroupEl.value, 10) : 1;
     if (!tournament || !round || round === 'all') {
       alert('Select a tournament and a round to add a result.');
       return;
@@ -920,7 +975,7 @@
     try {
       const supabase = window.supabaseConfig.supabase;
       const TABLES = window.supabaseConfig.TABLES;
-      const match = existingResultsMatches.find(m => m.round_number === roundNum);
+      const match = existingResultsMatches.find(m => m.round_number === roundNum && (m.group_number != null ? m.group_number : 1) === groupNum);
       if (match && match.scores) {
         const updatedScores = { ...match.scores };
         updatedScores[username] = { placement, points };
@@ -942,6 +997,7 @@
             tournament_id: tournament,
             tournament_type: 'legacy',
             round_number: roundNum,
+            group_number: groupNum,
             match_number: 1,
             participant_ids: participantId ? [participantId] : [],
             scores: { [username]: { placement, points } },

@@ -4,7 +4,7 @@
 
 .bracket-container {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start; /* left-align so first round (play-in/barrage) is visible; scroll right for finals */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding: 2rem;
