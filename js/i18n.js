@@ -183,6 +183,7 @@ const translations = {
       shareQR: "Scannez ce code QR pour vous inscrire",
       addCalendar: "Ajouter au calendrier",
       backHome: "Retour à l'accueil",
+      robloxDownloadIntro: "L'application Roblox est requise. Téléchargez-la ici :",
       
       // Privacy Notice
       privacyTitle: "Confidentialité",
@@ -540,6 +541,7 @@ const translations = {
       shareQR: "Scan this QR code to register",
       addCalendar: "Add to Calendar",
       backHome: "Back to Home",
+      robloxDownloadIntro: "The Roblox app is required. Please download it here:",
       
       // Privacy Notice
       privacyTitle: "Privacy",

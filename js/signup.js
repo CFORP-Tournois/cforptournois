@@ -179,7 +179,8 @@
         showSuccessPage({
           id: 'BOT-DETECTED',
           username: 'Bot',
-          tournament: 'none'
+          tournament: 'none',
+          gamePlatform: ''
         });
       }, 2000);
       return;
@@ -215,7 +216,8 @@
         showSuccessPage({
           id: 'DEMO-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
           username: formData.robloxUsername,
-          tournament: formData.tournament
+          tournament: formData.tournament,
+          gamePlatform: (formData.gamePlatform || '').toLowerCase()
         });
         return;
       }
@@ -388,7 +390,8 @@
     return {
       id: data.id.substring(0, 8).toUpperCase(),
       username: formData.robloxUsername,
-      tournament: formData.tournament
+      tournament: formData.tournament,
+      gamePlatform: (formData.gamePlatform || '').toLowerCase()
     };
   }
 
@@ -414,6 +417,16 @@
     // Populate success message data
     document.getElementById('registrationId').textContent = '#' + data.id;
     document.getElementById('confirmedUsername').textContent = data.username;
+    
+    // Show Roblox download link when tournament platform is Roblox (empty defaults to Roblox)
+    const robloxBlock = document.getElementById('robloxDownloadBlock');
+    const plat = (data.gamePlatform || '').toLowerCase();
+    if (robloxBlock && (plat === 'roblox' || plat === '')) {
+      robloxBlock.classList.remove('hidden');
+      if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
+    } else if (robloxBlock) {
+      robloxBlock.classList.add('hidden');
+    }
     
     // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
