@@ -81,3 +81,6 @@ Simulations/
 
 # Local QR / generated assets (don't push)
 AFNOO-tournois-QR.png
+
+# Deliverables (client docs, keep local only)
+Deliver/
