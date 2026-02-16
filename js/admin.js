@@ -857,14 +857,15 @@
 
     const roundNum = filterRound !== '' ? parseInt(filterRound, 10) : NaN;
     if (!isNaN(roundNum) && existingResultsParticipants.length > 0) {
-      // Round selected: show ALL participants; those with a result get placement/Update/Delete, others get Add
-      const match = matches.find(m => m.round_number === roundNum);
+      // Round selected: show participants; look up result from the match for this round AND participant's group (so "All groups" shows all groups' placements)
       const resultByUsername = {};
-      if (match && match.scores) {
-        Object.entries(match.scores).forEach(([username, scoreData]) => {
-          resultByUsername[username] = { placement: scoreData.placement, points: scoreData.points, matchId: match.id };
-        });
-      }
+      matches.filter(m => m.round_number === roundNum).forEach(match => {
+        if (match && match.scores) {
+          Object.entries(match.scores).forEach(([username, scoreData]) => {
+            resultByUsername[username] = { placement: scoreData.placement, points: scoreData.points, matchId: match.id };
+          });
+        }
+      });
       existingResultsParticipants.forEach((p) => {
         const username = p.roblox_username || '';
         const name = displayName(p);
