@@ -27,7 +27,7 @@
     .info-section h2 { color: #28724f; font-size: 1.25rem; margin-bottom: 1rem; padding-bottom: 0.5rem; border-bottom: 2px solid #6ab04c; }
     .info-section ul { margin: 0.5rem 0 0 1.25rem; }
     .info-section li { margin-bottom: 0.5rem; }
-    .ffa-points-scale { white-space: pre-line; font-size: 0.9rem; color: #555; margin-top: 0.35rem; padding: 0.5rem 0.75rem; background: rgba(0,0,0,0.04); border-radius: 6px; }
+    .ffa-points-scale { white-space: pre-line; font-size: 0.9rem; color: #333; margin-top: 0.5rem; line-height: 1.6; }
     .weapon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-top: 1rem; }
     .weapon-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1rem; background: #f5f5f5; border-radius: 8px; }
     .weapon-card strong { font-size: 0.9rem; color: #333; margin-bottom: 0.25rem; }
@@ -95,9 +95,17 @@
           <ul>
             <li>
               <span data-i18n="tournamentInfo.ffaPointsIntro">Points par place à l'arrivée (par ronde) :</span>
-              <div class="ffa-points-scale" data-i18n="tournamentInfo.ffaPointsScale">1er = 100 · 2e = 90 · 3e = 80 · 4e = 70 · 5e = 60
-6e = 50 · 7e = 40 · 8e = 30 · 9e = 20 · 10e = 5 pts
-11e et + = 0 pt</div>
+              <div class="ffa-points-scale" data-i18n="tournamentInfo.ffaPointsScale">1er : 100 pts
+2e : 90 pts
+3e : 80 pts
+4e : 70 pts
+5e : 60 pts
+6e : 50 pts
+7e : 40 pts
+8e : 30 pts
+9e : 20 pts
+10e : 5 pts
+11e et + : 0 pt</div>
             </li>
             <li data-i18n="tournamentInfo.ffaRounds">3 rondes FFA de 8 minutes chacune.</li>
             <li data-i18n="tournamentInfo.ffaTop10">Les 10 premiers au classement FFA passent en phase à élimination directe.</li>
