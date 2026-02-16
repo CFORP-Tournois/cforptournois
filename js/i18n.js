@@ -3,6 +3,7 @@
 
 const translations = {
   fr: {
+    devBanner: "Ce site est en développement. Les données ne seront pas conservées. Le site peut changer. Veuillez ne pas vous inscrire.",
     // Header & Navigation
     header: {
       title: "Tournois et compétitions",
@@ -372,6 +373,7 @@ const translations = {
   },
 
   en: {
+    devBanner: "This website is in development. Data will not be kept. Site is subject to change. Please do not register.",
     // Header & Navigation
     header: {
       title: "Tournaments & Competitions",

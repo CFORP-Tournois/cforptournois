@@ -378,8 +378,8 @@
       })
       .catch(err => console.warn('Auto-split after signup:', err));
 
-    // Fetch Roblox display name + avatar only when this tournament's platform is Roblox
-    if (formData.gamePlatform === 'roblox') {
+    // Fetch Roblox display name + avatar when platform is Roblox (default empty to roblox – form always collects Roblox username)
+    if ((formData.gamePlatform || 'roblox').toLowerCase() === 'roblox') {
       supabase.functions.invoke('Robloxuserinfo', {
         body: { username: formData.robloxUsername, participant_id: data.id }
       }).then(({ error: fnErr }) => {
