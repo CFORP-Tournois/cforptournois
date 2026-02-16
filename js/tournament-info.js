@@ -42,25 +42,51 @@
     }
   }
 
+  async function fetchTournamentDisplayInfo(tournamentTypeRaw) {
+    if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) return null;
+    try {
+      const { data } = await window.supabaseConfig.supabase
+        .from('tournaments')
+        .select('name_fr, name_en, status')
+        .eq('tournament_type', tournamentTypeRaw)
+        .maybeSingle();
+      return data;
+    } catch (e) {
+      return null;
+    }
+  }
+
   async function init() {
     const params = new URLSearchParams(window.location.search);
-    const tournamentType = (params.get('tournament') || '').trim().toLowerCase();
+    const rawTournament = (params.get('tournament') || '').trim();
+    const tournamentTypeLower = rawTournament.toLowerCase();
+    const isRivals = tournamentTypeLower === 'pvp' || tournamentTypeLower.startsWith('rivals');
     const rivalsContent = document.getElementById('rivalsContent');
     const genericInfo = document.getElementById('genericInfo');
     const tournamentTitle = document.getElementById('tournamentTitle');
     const tournamentSubtitle = document.getElementById('tournamentSubtitle');
 
-    if (tournamentType === 'pvp') {
+    if (isRivals) {
       rivalsContent.style.display = 'block';
       genericInfo.style.display = 'none';
       const heroLogo = document.getElementById('tournamentHeroLogo');
       if (heroLogo) heroLogo.classList.remove('hidden');
-      tournamentTitle.textContent = 'RIVALS';
+      var displayName = 'RIVALS';
+      if (rawTournament && window.supabaseConfig && window.supabaseConfig.isSupabaseConfigured()) {
+        var info = await fetchTournamentDisplayInfo(rawTournament);
+        if (info) {
+          var lang = window.i18n ? window.i18n.currentLang : 'fr';
+          displayName = lang === 'fr' ? (info.name_fr || info.name_en || 'RIVALS') : (info.name_en || info.name_fr || 'RIVALS');
+        }
+      }
+      tournamentTitle.textContent = displayName;
       tournamentSubtitle.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.rivalsSubtitle') : '13–18 ans • FFA puis élimination directe';
-      document.title = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.pageTitle') + ' – RIVALS' : 'Infos tournoi – RIVALS - AFNOO';
-      const status = await fetchTournamentStatus(tournamentType);
+      document.title = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.pageTitle') + ' – ' + displayName : 'Infos tournoi – ' + displayName + ' - AFNOO';
+      var status = await fetchTournamentStatus(rawTournament);
       showRegistrationClosedIfNeeded(status);
       setRivalsRegisterVisibility(status);
+      var registerLink = document.querySelector('#rivalsContent .btn-register-block a');
+      if (registerLink) registerLink.href = 'signup.html?tournament=' + encodeURIComponent(rawTournament);
       if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
       return;
     }
@@ -72,7 +98,7 @@
     const genericMessage = document.getElementById('genericMessage');
     const genericSignupLink = document.getElementById('genericSignupLink');
 
-    if (!tournamentType) {
+    if (!rawTournament) {
       tournamentTitle.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.noTournament') : 'Tournoi';
       tournamentSubtitle.textContent = '';
       genericMessage.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.selectFromHome') : 'Choisissez un tournoi depuis l’accueil pour voir ses infos.';
@@ -80,33 +106,25 @@
       genericSignupLink.style.display = 'none';
       document.title = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.pageTitle') : 'Infos tournoi - AFNOO';
     } else {
-      let name = tournamentType;
-      let status = null;
-      if (window.supabaseConfig && window.supabaseConfig.isSupabaseConfigured()) {
-        try {
-          const { data } = await window.supabaseConfig.supabase
-            .from('tournaments')
-            .select('name_fr, name_en, status')
-            .eq('tournament_type', tournamentType)
-            .maybeSingle();
-          if (data) {
-            const lang = window.i18n ? window.i18n.currentLang : 'fr';
-            name = lang === 'fr' ? (data.name_fr || data.name_en) : (data.name_en || data.name_fr);
-            status = data.status;
-          }
-        } catch (e) { /* ignore */ }
+      var name = rawTournament;
+      var status = null;
+      var info = await fetchTournamentDisplayInfo(rawTournament);
+      if (info) {
+        var lang = window.i18n ? window.i18n.currentLang : 'fr';
+        name = lang === 'fr' ? (info.name_fr || info.name_en || rawTournament) : (info.name_en || info.name_fr || rawTournament);
+        status = info.status;
       }
-      tournamentTitle.textContent = name || tournamentType;
+      tournamentTitle.textContent = name;
       tournamentSubtitle.textContent = '';
       genericMessage.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.moreInfoSoon') : 'Plus d’infos à venir pour ce tournoi.';
       showRegistrationClosedIfNeeded(status);
       if (status === 'in-progress' || status === 'at_capacity') {
         genericSignupLink.style.display = 'none';
       } else {
-        genericSignupLink.href = 'signup.html?tournament=' + encodeURIComponent(tournamentType);
+        genericSignupLink.href = 'signup.html?tournament=' + encodeURIComponent(rawTournament);
         genericSignupLink.style.display = 'inline-block';
       }
-      document.title = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.pageTitle') + ' – ' + (name || tournamentType) : 'Infos tournoi – ' + (name || tournamentType) + ' - AFNOO';
+      document.title = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.pageTitle') + ' – ' + name : 'Infos tournoi – ' + name + ' - AFNOO';
     }
 
     if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
@@ -114,9 +132,10 @@
 
   window.addEventListener('languageChanged', function() {
     const params = new URLSearchParams(window.location.search);
-    const tournamentType = (params.get('tournament') || '').trim().toLowerCase();
+    const tournamentTypeLower = (params.get('tournament') || '').trim().toLowerCase();
+    const isRivals = tournamentTypeLower === 'pvp' || tournamentTypeLower.startsWith('rivals');
     const tournamentSubtitle = document.getElementById('tournamentSubtitle');
-    if (tournamentType === 'pvp' && tournamentSubtitle) {
+    if (isRivals && tournamentSubtitle) {
       tournamentSubtitle.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.rivalsSubtitle') : '13–18 ans • FFA puis élimination directe';
     }
     if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();

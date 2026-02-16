@@ -105,12 +105,15 @@
   
   function preselectTournament() {
     const urlParams = new URLSearchParams(window.location.search);
-    const tournamentType = urlParams.get('tournament');
-    
-    if (tournamentType) {
-      const radio = document.querySelector(`input[name="tournament"][value="${tournamentType}"]`);
-      if (radio) {
-        radio.checked = true;
+    const tournamentParam = urlParams.get('tournament');
+    if (!tournamentParam) return;
+    const paramLower = tournamentParam.toLowerCase();
+    const radios = document.querySelectorAll('input[name="tournament"]');
+    for (let i = 0; i < radios.length; i++) {
+      if ((radios[i].value || '').toLowerCase() === paramLower) {
+        radios[i].checked = true;
+        radios[i].closest('.form-radio')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        break;
       }
     }
   }
