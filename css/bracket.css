@@ -258,11 +258,14 @@
   grid-column: 1 / -1;
   min-width: 0;
   width: 100%;
+  overflow-x: hidden; /* keep table scroll inside .table-container only */
 }
 
-.leaderboard-rank-td {
-  width: 100px;
-  min-width: 100px;
+/* Rank column: wide enough for "Rang dans le groupe" so header doesn't wrap or change layout when switching groups */
+.leaderboard-table .leaderboard-rank-th,
+.leaderboard-table .leaderboard-rank-td {
+  width: 150px;
+  min-width: 150px;
 }
 .leaderboard-rank-inner {
   display: inline-flex;

@@ -730,10 +730,10 @@
       <div class="leaderboard-wrapper" style="grid-column: 1 / -1; min-width: 0;">
         ${rankNoteText ? `<p class="leaderboard-group-note" style="margin: 0 0 0.75rem 0; font-size: 0.875rem; color: #666;">${escapeHtml(rankNoteText)}</p>` : ''}
         <div class="table-container" style="background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow-x: auto; overflow-y: visible;">
-          <table class="table leaderboard-table" style="margin: 0; min-width: 620px;">
+          <table class="table leaderboard-table" style="margin: 0; min-width: 670px;">
             <thead>
               <tr>
-                <th style="width: 100px; min-width: 100px; text-align: center;">${escapeHtml(rankHeaderText)}</th>
+                <th class="leaderboard-rank-th" style="width: 150px; min-width: 150px; text-align: center; white-space: nowrap;">${escapeHtml(rankHeaderText)}</th>
                 <th><span data-i18n="bracket.participant">Participant</span></th>
                 ${showGroupColumn ? `<th style="width: 90px; min-width: 90px; text-align: center;">${escapeHtml(groupHeaderText)}</th>` : ''}
                 <th style="width: 120px; text-align: center;"><span data-i18n="bracket.rounds">Rondes</span></th>
