@@ -28,9 +28,10 @@
     .info-section ul { margin: 0.5rem 0 0 1.25rem; }
     .info-section li { margin-bottom: 0.5rem; }
     .weapon-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 1rem; margin-top: 1rem; }
-    .weapon-card { text-align: center; padding: 1rem; background: #f5f5f5; border-radius: 8px; }
-    .weapon-card strong { display: block; font-size: 0.9rem; color: #333; margin-bottom: 0.5rem; }
-    .weapon-card img { max-width: 80px; height: auto; display: block; margin: 0 auto 0.5rem; }
+    .weapon-card { display: flex; flex-direction: column; align-items: center; text-align: center; padding: 1rem; background: #f5f5f5; border-radius: 8px; }
+    .weapon-card strong { font-size: 0.9rem; color: #333; margin-bottom: 0.25rem; }
+    .weapon-card .weapon-name { font-size: 0.85rem; color: #555; margin-bottom: 0.5rem; order: 2; }
+    .weapon-card img { max-width: 80px; height: auto; margin: 0; order: 3; }
     .btn-register-block { display: block; text-align: center; margin-top: 2rem; }
     .link-external { color: #28724f; font-weight: 600; }
     .link-external:hover { text-decoration: underline; }
@@ -111,9 +112,7 @@
           <h2 data-i18n="tournamentInfo.howToJoin">Comment participer</h2>
           <p data-i18n="tournamentInfo.joinSteps">Inscrivez-vous sur ce site, puis rejoignez le serveur privé Roblox du tournoi le jour J avec le lien ci-dessous.</p>
           <p style="margin-top: 1rem;">
-            <a href="https://www.roblox.com/share?code=fcedc0c5831df9498624f434dfd89792&type=Server" target="_blank" rel="noopener noreferrer" class="link-external">
-              Join the Tournaments Private RIVALS Server →
-            </a>
+            <a href="https://www.roblox.com/share?code=fcedc0c5831df9498624f434dfd89792&type=Server" target="_blank" rel="noopener noreferrer" class="link-external" data-i18n="tournamentInfo.joinServerLink">Rejoindre le serveur privé RIVALS du tournoi →</a>
           </p>
         </div>
 
@@ -124,23 +123,23 @@
           <div class="weapon-grid">
             <div class="weapon-card">
               <strong data-i18n="tournamentInfo.primary">Arme principale</strong>
+              <span class="weapon-name">Assault Rifle</span>
               <img src="assets/images/Rivals/AssaultRifle.webp" alt="Assault Rifle" onerror="this.style.display='none'">
-              <span>Assault Rifle</span>
             </div>
             <div class="weapon-card">
               <strong data-i18n="tournamentInfo.secondary">Secondaire</strong>
+              <span class="weapon-name">Daggers</span>
               <img src="assets/images/Rivals/Daggers.webp" alt="Daggers" onerror="this.style.display='none'">
-              <span>Daggers</span>
             </div>
             <div class="weapon-card">
               <strong data-i18n="tournamentInfo.melee">Mêlée</strong>
+              <span class="weapon-name">Knife</span>
               <img src="assets/images/Rivals/Knife.webp" alt="Knife" onerror="this.style.display='none'">
-              <span>Knife</span>
             </div>
             <div class="weapon-card">
               <strong data-i18n="tournamentInfo.utility">Utility</strong>
+              <span class="weapon-name">FlashBang</span>
               <img src="assets/images/Rivals/Flashbang.webp" alt="FlashBang" onerror="this.style.display='none'">
-              <span>FlashBang</span>
             </div>
           </div>
         </div>
