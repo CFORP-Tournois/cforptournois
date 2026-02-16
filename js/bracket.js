@@ -689,16 +689,15 @@
     const leaderboard = Object.values(participantScores)
       .sort((a, b) => b.totalPoints - a.totalPoints);
 
-    // Assign ranks (handling ties)
+    // Assign ranks (dense: ties share rank; next distinct score is 2nd, 3rd, … no skipped rank)
     let currentRank = 1;
     leaderboard.forEach((player, index) => {
       if (index > 0 && player.totalPoints === leaderboard[index - 1].totalPoints) {
-        // Tie - same rank as previous
         player.rank = leaderboard[index - 1].rank;
       } else {
         player.rank = currentRank;
+        currentRank++;
       }
-      currentRank++;
     });
 
     // Mark ALL players in tied positions
