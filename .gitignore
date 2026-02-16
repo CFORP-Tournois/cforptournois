@@ -2,6 +2,11 @@
 node_modules/
 package-lock.json
 yarn.lock
+# Simulation / local tooling (not needed in repo)
+package.json
+
+# Supabase (local / deployed separately, not needed in repo)
+supabase/
 
 # Environment variables (if you add any sensitive data)
 .env

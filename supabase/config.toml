@@ -1,5 +1,0 @@
-# Per-function config: allow unauthenticated invoke so CORS preflight (OPTIONS) reaches the function.
-# Otherwise Supabase returns 401 before our code runs and browser blocks with CORS.
-# The function still validates the request body; only signup flow calls it with participant_id.
-[functions.fetch-roblox-profile]
-verify_jwt = false
