@@ -721,8 +721,8 @@
     const isGroupView = currentGroupFilter !== 'all';
     const rankHeaderText = (window.i18n && window.i18n.t) ? (isGroupView ? window.i18n.t('bracket.rankInGroup') : window.i18n.t('bracket.rank')) : (isGroupView ? 'Rank in group' : 'Rank');
     const rankNoteText = isGroupView && (window.i18n && window.i18n.t) ? window.i18n.t('bracket.ranksInGroupNote') : '';
-    const maxGroup = participants.length ? Math.max(...participants.map(p => p.group_number != null ? p.group_number : 1)) : 1;
-    const showGroupColumn = maxGroup > 1;
+    // Use tournament group count so column layout stays consistent (no shift when switching Group 1 / Group 2)
+    const showGroupColumn = currentTournamentObj && (currentTournamentObj.number_of_groups || 0) > 1;
     const groupHeaderText = (window.i18n && window.i18n.t) ? window.i18n.t('bracket.group') : 'Group';
     // Generate leaderboard table
     const participantsList = document.getElementById('participantsList');
