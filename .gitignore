@@ -73,3 +73,6 @@ STATUS_AND_NEXT_STEPS.md
 
 # Simulation scripts and output (local testing)
 Simulations/
+
+# Local QR / generated assets (don't push)
+AFNOO-tournois-QR.png
