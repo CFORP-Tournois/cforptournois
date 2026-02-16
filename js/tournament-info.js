@@ -74,9 +74,11 @@
   async function init() {
     const params = new URLSearchParams(window.location.search);
     const rawTournament = (params.get('tournament') || '').trim();
-    const tournamentTypeLower = rawTournament.toLowerCase();
-    const isRivals = tournamentTypeLower === 'pvp' || tournamentTypeLower.startsWith('rivals');
-    const isHideAndSeek = tournamentTypeLower === 'hide-and-seek' || tournamentTypeLower.startsWith('hide') || tournamentTypeLower === 'cache-cache';
+    const tournamentTypeLower = rawTournament.toLowerCase().replace(/\s+/g, '-');
+    const tournamentTypeRawLower = (rawTournament || '').toLowerCase();
+    const isRivals = tournamentTypeRawLower === 'pvp' || tournamentTypeRawLower.startsWith('rivals');
+    const isHideAndSeek = tournamentTypeLower === 'hide-and-seek' || tournamentTypeLower === 'cache-cache' || tournamentTypeRawLower === 'cachecache'
+      || tournamentTypeRawLower.startsWith('hide') || tournamentTypeRawLower.includes('cache') || tournamentTypeRawLower.includes('hide');
     const rivalsContent = document.getElementById('rivalsContent');
     const hideContent = document.getElementById('hideContent');
     const genericInfo = document.getElementById('genericInfo');
@@ -187,9 +189,12 @@
 
   window.addEventListener('languageChanged', function() {
     const params = new URLSearchParams(window.location.search);
-    const tournamentTypeLower = (params.get('tournament') || '').trim().toLowerCase();
-    const isRivals = tournamentTypeLower === 'pvp' || tournamentTypeLower.startsWith('rivals');
-    const isHideAndSeek = tournamentTypeLower === 'hide-and-seek' || tournamentTypeLower.startsWith('hide') || tournamentTypeLower === 'cache-cache';
+    const raw = (params.get('tournament') || '').trim();
+    const tournamentTypeLower = raw.toLowerCase().replace(/\s+/g, '-');
+    const rawLower = raw.toLowerCase();
+    const isRivals = rawLower === 'pvp' || rawLower.startsWith('rivals');
+    const isHideAndSeek = tournamentTypeLower === 'hide-and-seek' || tournamentTypeLower === 'cache-cache' || rawLower === 'cachecache'
+      || rawLower.startsWith('hide') || rawLower.includes('cache') || rawLower.includes('hide');
     const tournamentSubtitle = document.getElementById('tournamentSubtitle');
     const tournamentTitle = document.getElementById('tournamentTitle');
     const currentLang = window.i18n ? window.i18n.currentLang : 'fr';
