@@ -125,7 +125,19 @@ const translations = {
       practiceText: "Jouez à RIVALS sur Roblox pour vous familiariser avec le jeu.",
       registerForTournament: "S'inscrire à ce tournoi",
       registrationClosed: "Tournoi complet – Inscriptions fermées",
-      backToHome: "Retour à l'accueil"
+      backToHome: "Retour à l'accueil",
+      hideSubtitle: "Pour s'amuser!",
+      hideFormat: "Pour s'amuser!",
+      hideOneSeeker: "Il y a 1 chercheur et plusieurs cachés.",
+      hideSeekerRandom: "Le chercheur est choisi au hasard.",
+      hideOneMin: "Au début, vous avez 1 minute pour vous CACHER!",
+      hideWin: "Restez caché jusqu'à la fin du round – si vous n'êtes pas touché, vous gagnez!",
+      hideSeekerJob: "Si vous êtes le chercheur, trouvez et touchez tout le monde dans le lobby.",
+      hideRoundLength: "Chaque round dure 350 secondes (5 min 50 s).",
+      hideCapacity: "Le serveur peut accueillir 98 joueurs + 2 spectateurs. Il y aura 1 chercheur pour 25 cachés.",
+      hideServerLink: "Rejoindre le serveur privé Hide and Seek →",
+      hidePlayGame: "Jouer au jeu",
+      hideRules: "Pas de règles, amusez-vous!"
     },
 
     // Signup Form
@@ -468,7 +480,19 @@ const translations = {
       practiceText: "Play RIVALS on Roblox to get familiar with the game.",
       registerForTournament: "Register for this tournament",
       registrationClosed: "Tournament full – Registration closed",
-      backToHome: "Back to home"
+      backToHome: "Back to home",
+      hideSubtitle: "For fun!",
+      hideFormat: "For fun!",
+      hideOneSeeker: "There is 1 seeker and many hiders.",
+      hideSeekerRandom: "The seeker is chosen at random.",
+      hideOneMin: "At the start, you have 1 minute to HIDE!",
+      hideWin: "Hide until the round ends – if you don't get tagged, you win!",
+      hideSeekerJob: "If you're the seeker, find and tag everyone in the lobby.",
+      hideRoundLength: "Each round lasts 350 seconds (5 min 50 s).",
+      hideCapacity: "The server can hold 98 players + 2 spectators. There will be 1 seeker per 25 hiders.",
+      hideServerLink: "Join the Hide and Seek private server →",
+      hidePlayGame: "Play the game",
+      hideRules: "No rules, just have fun!"
     },
 
     // Signup Form

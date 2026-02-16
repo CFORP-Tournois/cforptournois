@@ -42,6 +42,16 @@
     }
   }
 
+  function setHideRegisterVisibility(status) {
+    const block = document.querySelector('#hideContent .btn-register-block');
+    if (!block) return;
+    if (status === 'in-progress' || status === 'at_capacity') {
+      block.style.display = 'none';
+    } else {
+      block.style.display = 'block';
+    }
+  }
+
   function stripHeartFromName(name) {
     if (!name || typeof name !== 'string') return name;
     return name.replace(/^\s*\[💘\]\s*/i, '').replace(/^\s*\[❤️?\]\s*/i, '').trim() || name;
@@ -66,18 +76,55 @@
     const rawTournament = (params.get('tournament') || '').trim();
     const tournamentTypeLower = rawTournament.toLowerCase();
     const isRivals = tournamentTypeLower === 'pvp' || tournamentTypeLower.startsWith('rivals');
+    const isHideAndSeek = tournamentTypeLower === 'hide-and-seek' || tournamentTypeLower.startsWith('hide');
     const rivalsContent = document.getElementById('rivalsContent');
+    const hideContent = document.getElementById('hideContent');
     const genericInfo = document.getElementById('genericInfo');
     const tournamentTitle = document.getElementById('tournamentTitle');
     const tournamentSubtitle = document.getElementById('tournamentSubtitle');
+    const hero = document.getElementById('tournamentHero');
+    const heroLogo = document.getElementById('tournamentHeroLogo');
+
+    if (isHideAndSeek) {
+      if (rivalsContent) rivalsContent.style.display = 'none';
+      if (hideContent) hideContent.style.display = 'block';
+      genericInfo.style.display = 'none';
+      if (hero) hero.classList.add('hero-with-logo');
+      if (heroLogo) {
+        heroLogo.src = 'assets/images/Hide/Hidelogo.png';
+        heroLogo.alt = 'Hide and Seek';
+        heroLogo.classList.remove('hidden');
+      }
+      var displayName = 'Hide and Seek';
+      if (rawTournament && window.supabaseConfig && window.supabaseConfig.isSupabaseConfigured()) {
+        var info = await fetchTournamentDisplayInfo(rawTournament);
+        if (info) {
+          var lang = window.i18n ? window.i18n.currentLang : 'fr';
+          displayName = stripHeartFromName(lang === 'fr' ? (info.name_fr || info.name_en || 'Hide and Seek') : (info.name_en || info.name_fr || 'Hide and Seek'));
+        }
+      }
+      tournamentTitle.textContent = displayName;
+      tournamentSubtitle.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.hideSubtitle') : 'Pour s\'amuser!';
+      document.title = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.pageTitle') + ' – ' + displayName : 'Infos tournoi – ' + displayName + ' - AFNOO';
+      var status = await fetchTournamentStatus(rawTournament);
+      showRegistrationClosedIfNeeded(status);
+      setHideRegisterVisibility(status);
+      var registerLink = document.querySelector('#hideContent .btn-register-block a');
+      if (registerLink) registerLink.href = 'signup.html?tournament=' + encodeURIComponent(rawTournament);
+      if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
+      return;
+    }
 
     if (isRivals) {
+      if (hideContent) hideContent.style.display = 'none';
       rivalsContent.style.display = 'block';
       genericInfo.style.display = 'none';
-      const hero = document.getElementById('tournamentHero');
       if (hero) hero.classList.add('hero-with-logo');
-      const heroLogo = document.getElementById('tournamentHeroLogo');
-      if (heroLogo) heroLogo.classList.remove('hidden');
+      if (heroLogo) {
+        heroLogo.src = 'assets/images/Rivals/Rivals-Logo.png';
+        heroLogo.alt = 'RIVALS';
+        heroLogo.classList.remove('hidden');
+      }
       var displayName = 'RIVALS';
       if (rawTournament && window.supabaseConfig && window.supabaseConfig.isSupabaseConfigured()) {
         var info = await fetchTournamentDisplayInfo(rawTournament);
@@ -98,11 +145,10 @@
       return;
     }
 
-    rivalsContent.style.display = 'none';
+    if (rivalsContent) rivalsContent.style.display = 'none';
+    if (hideContent) hideContent.style.display = 'none';
     genericInfo.style.display = 'block';
-    const hero = document.getElementById('tournamentHero');
     if (hero) hero.classList.remove('hero-with-logo');
-    const heroLogo = document.getElementById('tournamentHeroLogo');
     if (heroLogo) heroLogo.classList.add('hidden');
     const genericMessage = document.getElementById('genericMessage');
     const genericSignupLink = document.getElementById('genericSignupLink');
@@ -143,9 +189,11 @@
     const params = new URLSearchParams(window.location.search);
     const tournamentTypeLower = (params.get('tournament') || '').trim().toLowerCase();
     const isRivals = tournamentTypeLower === 'pvp' || tournamentTypeLower.startsWith('rivals');
+    const isHideAndSeek = tournamentTypeLower === 'hide-and-seek' || tournamentTypeLower.startsWith('hide');
     const tournamentSubtitle = document.getElementById('tournamentSubtitle');
-    if (isRivals && tournamentSubtitle) {
-      tournamentSubtitle.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.rivalsSubtitle') : '13–18 ans • FFA puis élimination directe';
+    if (tournamentSubtitle) {
+      if (isRivals) tournamentSubtitle.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.rivalsSubtitle') : '13–18 ans • FFA puis élimination directe';
+      else if (isHideAndSeek) tournamentSubtitle.textContent = (window.i18n && window.i18n.t) ? window.i18n.t('tournamentInfo.hideSubtitle') : 'Pour s\'amuser!';
     }
     if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
   });

@@ -18,9 +18,9 @@
   <style>
     .tournament-info-hero { background: linear-gradient(135deg, #28724f 0%, #1b4d3a 100%); color: white; padding: 2rem; border-radius: 12px; margin-bottom: 2rem; text-align: center; min-height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     .tournament-info-hero h1 { color: white; margin-bottom: 0.5rem; }
-    .tournament-info-hero .rivals-logo { max-height: 56px; width: auto; margin-bottom: 0.5rem; vertical-align: middle; }
     .tournament-info-hero.hero-with-logo { background: transparent; padding: 0 0 0.5rem; min-height: 0; }
-    .tournament-info-hero.hero-with-logo .rivals-logo { max-width: 100%; max-height: none; height: auto; width: auto; display: block; margin: 0; }
+    .tournament-info-hero .tournament-hero-logo { max-height: 56px; width: auto; margin-bottom: 0.5rem; vertical-align: middle; }
+    .tournament-info-hero.hero-with-logo .tournament-hero-logo { max-width: 100%; max-height: none; height: auto; width: auto; display: block; margin: 0; }
     .tournament-info-hero.hero-with-logo h1 { display: none; }
     .tournament-info-hero.hero-with-logo .tournament-info-subtitle { margin-top: 0.5rem; margin-bottom: 0; color: #555; font-size: 0.95rem; }
     .info-section { background: white; padding: 1.5rem 2rem; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 1.5rem; }
@@ -37,6 +37,7 @@
     .link-external { color: #28724f; font-weight: 600; }
     .link-external:hover { text-decoration: underline; }
     #genericInfo { display: none; }
+    #hideContent { display: none; }
     .registration-closed-banner { padding: 1rem 1.5rem; border-radius: 8px; text-align: center; font-weight: 600; margin-bottom: 1.5rem; }
     .registration-closed-banner.at-capacity { background: linear-gradient(135deg, #e07c24 0%, #c2610a 100%); color: white; }
     .registration-closed-banner.in-progress { background: linear-gradient(135deg, #40916c 0%, #2d6a4f 100%); color: white; }
@@ -77,7 +78,7 @@
       
       <!-- Hero: tournament name (filled by JS); RIVALS shows logo -->
       <div id="tournamentHero" class="tournament-info-hero">
-        <img id="tournamentHeroLogo" src="assets/images/Rivals/Rivals-Logo.png" alt="RIVALS" class="rivals-logo hidden">
+        <img id="tournamentHeroLogo" src="assets/images/Rivals/Rivals-Logo.png" alt="" class="tournament-hero-logo hidden">
         <h1 id="tournamentTitle">—</h1>
         <p id="tournamentSubtitle" class="tournament-info-subtitle" style="opacity: 0.95; font-size: 1rem;"></p>
       </div>
@@ -171,6 +172,48 @@
         <div class="btn-register-block">
           <a href="signup.html?tournament=pvp" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem;">
             <span data-i18n="tournamentInfo.registerForTournament">S’inscrire à ce tournoi</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Hide and Seek specific content -->
+      <div id="hideContent">
+        <div class="info-section">
+          <h2 data-i18n="tournamentInfo.format">Format</h2>
+          <p><strong data-i18n="tournamentInfo.hideFormat">Pour s'amuser!</strong></p>
+          <ul>
+            <li data-i18n="tournamentInfo.hideOneSeeker">Il y a 1 chercheur et plusieurs cachés.</li>
+            <li data-i18n="tournamentInfo.hideSeekerRandom">Le chercheur est choisi au hasard.</li>
+            <li data-i18n="tournamentInfo.hideOneMin">Au début, vous avez 1 minute pour vous CACHER!</li>
+            <li data-i18n="tournamentInfo.hideWin">Restez caché jusqu'à la fin du round – si vous n'êtes pas touché, vous gagnez!</li>
+            <li data-i18n="tournamentInfo.hideSeekerJob">Si vous êtes le chercheur, trouvez et touchez tout le monde dans le lobby.</li>
+            <li data-i18n="tournamentInfo.hideRoundLength">Chaque round dure 350 secondes (5 min 50 s).</li>
+          </ul>
+        </div>
+        <div class="info-section">
+          <h2 data-i18n="tournamentInfo.capacity">Places</h2>
+          <p data-i18n="tournamentInfo.hideCapacity">Le serveur peut accueillir 98 joueurs + 2 spectateurs. Il y aura 1 chercheur pour 25 cachés.</p>
+        </div>
+        <div class="info-section">
+          <h2 data-i18n="tournamentInfo.howToJoin">Comment participer</h2>
+          <p data-i18n="tournamentInfo.joinSteps">Inscrivez-vous sur ce site, puis rejoignez le serveur privé Roblox du tournoi le jour J avec le lien ci-dessous.</p>
+          <p style="margin-top: 1rem;">
+            <a href="https://www.roblox.com/share?code=4ddf7a07a66b2041bdc7e6c40709ace1&type=Server" target="_blank" rel="noopener noreferrer" class="link-external" data-i18n="tournamentInfo.hideServerLink">Rejoindre le serveur privé Hide and Seek →</a>
+          </p>
+        </div>
+        <div class="info-section">
+          <h2 data-i18n="tournamentInfo.hidePlayGame">Jouer au jeu</h2>
+          <p>
+            <a href="https://www.roblox.com/games/6063653725/100-Player-Mega-Hide-and-Seek" target="_blank" rel="noopener noreferrer" class="link-external">100 Player Mega Hide and Seek – Roblox</a>
+          </p>
+        </div>
+        <div class="info-section">
+          <h2 data-i18n="tournamentInfo.rules">Règles</h2>
+          <p data-i18n="tournamentInfo.hideRules">Pas de règles, amusez-vous!</p>
+        </div>
+        <div class="btn-register-block">
+          <a href="signup.html?tournament=hide-and-seek" class="btn btn-primary" style="font-size: 1.125rem; padding: 1rem 2rem;">
+            <span data-i18n="tournamentInfo.registerForTournament">S'inscrire à ce tournoi</span>
           </a>
         </div>
       </div>
