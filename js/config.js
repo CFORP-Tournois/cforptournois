@@ -19,12 +19,7 @@ if (typeof supabaseClient === 'undefined' || supabaseClient === null) {
   if (typeof window.supabase !== 'undefined' && window.supabase.createClient) {
     try {
       supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-      console.log('✅ Supabase initialized successfully');
-    } catch (error) {
-      console.error('❌ Error initializing Supabase:', error);
-    }
-  } else {
-    console.warn('⚠️ Supabase library not loaded yet. Make sure to include the CDN script.');
+    } catch (error) {}
   }
 }
 

@@ -26,11 +26,6 @@
 </head>
 <body>
   
-  <!-- DEV BANNER (remove when going live) -->
-  <div class="dev-banner" role="alert">
-    <span data-i18n="devBanner">Ce site est en développement. Les données ne seront pas conservées. Le site peut changer. Veuillez ne pas vous inscrire.</span>
-  </div>
-
   <!-- HEADER -->
   <header class="header" role="banner">
     <div class="header-container">
@@ -331,7 +326,6 @@
       const noTournamentsState = document.getElementById('noTournamentsState');
       
       if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
-        console.warn('Supabase not configured');
         tournaments = [];
         showNoTournaments();
         return;
@@ -347,7 +341,6 @@
           .order('display_order', { ascending: true });
         
         if (error) {
-          console.error('Error loading tournaments:', error);
           tournaments = [];
           showNoTournaments();
           return;
@@ -365,7 +358,6 @@
           showNoTournaments();
         }
       } catch (error) {
-        console.error('Error:', error);
         tournaments = [];
         showNoTournaments();
       }
@@ -457,10 +449,6 @@
           .select('*')
           .eq('tournament_id', tournamentObj.id)
           .order('round_number', { ascending: true });
-
-        if (matchError) {
-          console.error('Error loading matches:', matchError);
-        }
 
         const bracketStyle = (tournamentObj.bracket_style || 'scoreboard').toLowerCase();
         const bracketSectionEl = document.getElementById('bracketTreeSection');
@@ -566,7 +554,6 @@
           showNoResults();
         }
       } catch (error) {
-        console.error('Error:', error);
         showNoResults();
       }
     }
@@ -654,12 +641,10 @@
           .order('match_number', { ascending: true });
 
         if (error) {
-          console.error('Error loading bracket:', error);
           return null;
         }
 
         if (!data || data.length === 0) {
-          console.log('No bracket generated yet');
           return null;
         }
 
@@ -667,7 +652,6 @@
         updatePodiumAndStandingsFromBracket(data);
         return data;
       } catch (error) {
-        console.error('Error:', error);
         return null;
       }
     }

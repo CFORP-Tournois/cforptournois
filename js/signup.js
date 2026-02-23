@@ -40,7 +40,6 @@
     if (!container) return;
     
     if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
-      console.warn('Supabase not configured');
       container.innerHTML = '<div style="color: #E63946; padding: 1rem;">Unable to load tournaments. Please refresh the page.</div>';
       return;
     }
@@ -55,7 +54,6 @@
         .order('display_order', { ascending: true });
       
       if (error) {
-        console.error('Error loading tournaments:', error);
         container.innerHTML = '<div style="color: #E63946; padding: 1rem;">Error loading tournaments</div>';
         return;
       }
@@ -98,7 +96,6 @@
       // Re-select tournament from URL if it was previously selected
       preselectTournament();
     } catch (error) {
-      console.error('Error:', error);
       container.innerHTML = '<div style="color: #E63946; padding: 1rem;">Error loading tournaments</div>';
     }
   }
@@ -174,7 +171,6 @@
     const honeypot = document.getElementById('website').value;
     if (honeypot && honeypot.trim() !== '') {
       // Bot detected! Show fake success to confuse the bot
-      console.warn('🤖 Bot detected via honeypot');
       setTimeout(() => {
         showSuccessPage({
           id: 'BOT-DETECTED',
@@ -212,7 +208,6 @@
       // Check if Supabase is configured
       if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
         // Fallback: Show success without saving to database
-        console.warn('Supabase not configured. Registration not saved to database.');
         showSuccessPage({
           id: 'DEMO-' + Math.random().toString(36).substr(2, 9).toUpperCase(),
           username: formData.robloxUsername,
@@ -229,7 +224,6 @@
       showSuccessPage(result);
       
     } catch (error) {
-      console.error('Registration error:', error);
       
       // Show error message
       if (error.message.includes('already registered')) {
@@ -373,17 +367,14 @@
     // Auto-split groups (server-side so updates succeed; client-side updates may be blocked by RLS)
     supabase.functions.invoke('auto-split-groups', { body: { tournament_id: formData.tournamentId } })
       .then(({ data, error }) => {
-        if (error) console.warn('Auto-split after signup:', error);
-        if (data && (data.error || data.detail)) console.warn('Auto-split response:', data.error || '', data.detail || '');
       })
-      .catch(err => console.warn('Auto-split after signup:', err));
+      .catch(() => {});
 
     // Fetch Roblox display name + avatar when platform is Roblox (default empty to roblox – form always collects Roblox username)
     if ((formData.gamePlatform || 'roblox').toLowerCase() === 'roblox') {
       supabase.functions.invoke('Robloxuserinfo', {
         body: { username: formData.robloxUsername, participant_id: data.id }
       }).then(({ error: fnErr }) => {
-        if (fnErr) console.warn('Roblox profile fetch failed (optional):', fnErr);
       }).catch(() => {});
     }
 

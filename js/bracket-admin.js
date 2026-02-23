@@ -88,14 +88,12 @@
         .order('created_at', { ascending: false });
 
       if (error) {
-        console.error('Error loading tournaments:', error);
         return;
       }
 
       tournaments = data || [];
       populateTournamentDropdown();
     } catch (error) {
-      console.error('Error:', error);
     }
   }
 
@@ -175,13 +173,11 @@
         .order('signup_timestamp', { ascending: true });
 
       if (error) {
-        console.error('Error loading participants:', error);
         return;
       }
 
       participants = parts || [];
     } catch (error) {
-      console.error('Error:', error);
     }
   }
 
@@ -200,7 +196,6 @@
         .limit(1);
 
       if (error) {
-        console.error('Error checking bracket:', error);
         return;
       }
 
@@ -214,7 +209,6 @@
         document.getElementById('bracketCurrentStatus').textContent = 'Not Generated';
       }
     } catch (error) {
-      console.error('Error:', error);
     }
   }
 
@@ -327,7 +321,6 @@
     // Use exactly the seeded list (already top N with seeds 1..N)
     const topPlayers = allSeededParticipants;
     
-    console.log(`Selected top ${topPlayers.length} players for bracket:`, topPlayers.map(p => p.roblox_username));
 
     try {
       // Generate bracket: pad to power of 2, round 1 pairings 1 vs last, 2 vs second-to-last, etc.; byes advance to round 2
@@ -342,7 +335,6 @@
 
       alert(`✓ Bracket generated successfully!\n\nTop ${desiredBracketSize} of ${totalParticipants} participants advanced\nBracket size: ${actualBracketSize} (${byesNeeded} bye${byesNeeded === 1 ? '' : 's'})`);
     } catch (err) {
-      console.error('Bracket generation error:', err);
       alert(err && err.message ? err.message : 'Error generating bracket.');
     }
   }
@@ -382,17 +374,13 @@
         .eq('tournament_id', currentTournament.id);
 
       if (error) {
-        console.error('Error fetching matches for seeding:', error);
-        console.warn('No match results found, using signup order');
         return participants;
       }
 
       if (!matches || matches.length === 0) {
-        console.warn('No match results found, using signup order');
         return participants;
       }
 
-      console.log(`Found ${matches.length} matches for seeding calculation`);
 
       // Calculate total points per participant from scores object
       const pointsMap = {};
@@ -416,7 +404,6 @@
         return (pointsMap[b.id] || 0) - (pointsMap[a.id] || 0);
       });
     } catch (error) {
-      console.error('Error seeding by points:', error);
       return participants;
     }
   }
@@ -569,7 +556,6 @@
         .select();
 
       if (error) {
-        console.error('Error saving bracket:', error);
         alert('Error saving bracket: ' + error.message);
         return;
       }
@@ -579,7 +565,6 @@
         await updateNextMatchIds(data, originalMatches);
       }
     } catch (error) {
-      console.error('Error:', error);
       alert('Error saving bracket');
     }
   }
@@ -618,14 +603,12 @@
 
     // Batch update
     if (updates.length > 0) {
-      console.log(`Updating ${updates.length} next_match_id references...`);
       for (const update of updates) {
         await supabase
           .from('bracket_matches')
           .update({ next_match_id: update.next_match_id })
           .eq('id', update.id);
       }
-      console.log('✅ Next match IDs updated successfully');
     }
   }
 
@@ -656,18 +639,14 @@
         .order('match_number', { ascending: true });
 
       if (error) {
-        console.error('Error loading bracket:', error);
         return;
       }
 
       bracketMatches = data || [];
-      console.log('🎯 Loaded bracket matches:', bracketMatches);
       if (bracketMatches.length > 0) {
-        console.log('📋 First match structure:', bracketMatches[0]);
       }
       displayBracket();
     } catch (error) {
-      console.error('Error:', error);
     }
   }
 
@@ -915,7 +894,6 @@
         .single();
 
       if (error) {
-        console.error('Error updating match:', error);
         alert('Error updating match');
         return;
       }
@@ -945,7 +923,6 @@
       // Reload bracket
       await loadAndDisplayBracket();
     } catch (error) {
-      console.error('Error:', error);
       alert('Error updating match');
     }
   }
@@ -962,7 +939,6 @@
         .single();
 
       if (fetchError || !nextMatch) {
-        console.error('Error fetching next match:', fetchError);
         return;
       }
 
@@ -973,7 +949,6 @@
       } else if (!nextMatch.player2_id) {
         updates.player2_id = winnerId;
       } else {
-        console.warn('Next match already has both players');
         return;
       }
 
@@ -984,10 +959,8 @@
         .eq('id', nextMatchId);
 
       if (updateError) {
-        console.error('Error advancing winner:', updateError);
       }
     } catch (error) {
-      console.error('Error:', error);
     }
   }
 
@@ -1074,7 +1047,6 @@
         .single();
 
       if (error) {
-        console.error('Error updating match:', error);
         alert('Error updating match');
         return;
       }
@@ -1092,7 +1064,6 @@
       await loadAndDisplayBracket();
       alert('✓ Match updated');
     } catch (err) {
-      console.error('Error saving match:', err);
       alert('Error updating match');
     }
   }
@@ -1119,7 +1090,6 @@
         .eq('tournament_id', currentTournament.id);
 
       if (error) {
-        console.error('Error deleting bracket:', error);
         alert('Error deleting bracket');
         return;
       }
@@ -1129,7 +1099,6 @@
       
       alert('✓ Bracket deleted successfully');
     } catch (error) {
-      console.error('Error:', error);
       alert('Error deleting bracket');
     }
   }

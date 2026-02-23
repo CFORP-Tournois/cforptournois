@@ -22,7 +22,6 @@
   
   async function loadTournaments() {
     if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
-      console.warn('Supabase not configured');
       showError();
       return;
     }
@@ -37,7 +36,6 @@
         .order('display_order', { ascending: true });
       
       if (error) {
-        console.error('Error loading tournaments:', error);
         showError();
         return;
       }
@@ -50,7 +48,6 @@
         renderTournaments();
       }
     } catch (error) {
-      console.error('Error:', error);
       showError();
     }
   }

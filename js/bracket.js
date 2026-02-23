@@ -38,7 +38,6 @@
     if (window.supabaseConfig && window.supabaseConfig.isSupabaseConfigured()) {
       setupRealtimeUpdates();
     } else {
-      console.warn('Supabase not configured. Real-time updates disabled.');
       // Load demo data for testing
       loadDemoData();
     }
@@ -54,7 +53,6 @@
   
   async function loadTournaments() {
     if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
-      console.warn('Supabase not configured');
       return;
     }
     
@@ -68,27 +66,20 @@
         .order('display_order', { ascending: true });
       
       if (error) {
-        console.error('Error loading tournaments:', error);
         return;
       }
       
       tournaments = data || [];
       
-      console.log('🏆 Loaded tournaments:', tournaments);
-      
       if (tournaments.length > 0) {
         renderTournamentTabs();
         // Set first tournament as current
         currentTournament = tournaments[0].tournament_type;
-        console.log('🎯 Setting current tournament to:', currentTournament);
-        console.log('📋 Tournament details:', tournaments[0]);
         switchTournament(currentTournament);
       } else {
         showNoTournaments();
       }
-    } catch (error) {
-      console.error('Error:', error);
-    }
+    } catch (error) {}
   }
   
   function renderTournamentTabs() {
@@ -229,7 +220,6 @@
       // Get tournament object first
       const tournamentObj = tournaments.find(t => t.tournament_type === tournament);
       if (!tournamentObj) {
-        console.error('❌ Tournament object not found for:', tournament);
         showEmpty();
         return;
       }
@@ -240,7 +230,6 @@
       clearBracketSection();
       
       // Fetch participants for this tournament using tournament_id
-      console.log('👥 Fetching participants for tournament_id:', tournamentObj.id);
       const { data: participants, error } = await supabase
         .from(TABLES.PARTICIPANTS)
         .select('*')
@@ -248,15 +237,11 @@
         .order('signup_timestamp', { ascending: true });
       
       if (error) {
-        console.error('❌ Error fetching participants:', error);
         showEmpty();
         return;
       }
       
-      console.log('✅ Found participants:', participants ? participants.length : 0, participants);
-      
       if (!participants || participants.length === 0) {
-        console.warn('⚠️ No participants found for tournament_id:', tournamentObj.id);
         showEmpty(tournamentObj);
         return;
       }
@@ -269,18 +254,11 @@
       const effectiveNumGroups = maxGroupInList;
 
       // Fetch match results for leaderboard using tournament_id
-      console.log('🔍 Fetching matches for tournament_id:', tournamentObj.id);
       const { data: matches, error: matchError } = await supabase
         .from(TABLES.MATCHES)
         .select('*')
         .eq('tournament_id', tournamentObj.id)
         .order('round_number', { ascending: true });
-
-      if (matchError) {
-        console.error('❌ Error fetching matches:', matchError);
-      }
-
-      console.log('📊 Found matches:', matches ? matches.length : 0);
 
       // Store matches globally
       currentMatches = matches || [];
@@ -303,14 +281,12 @@
 
       // Calculate leaderboard if we have results (round dropdown is per-tournament)
       if (matches && matches.length > 0) {
-        console.log('✅ Displaying leaderboard with', matches.length, 'matches');
         currentRoundFilter = 'overall';
         setupRoundFilter(matches);
         if (effectiveNumGroups > 1) setupGroupFilter(effectiveNumGroups); else hideGroupFilter();
         displayLeaderboard(getFilteredParticipants(), matches, 'overall');
       } else {
         // No results yet: hide round dropdown and show participant list only
-        console.log('ℹ️ No matches found - showing participant list');
         hideRoundFilter();
         if (effectiveNumGroups > 1) setupGroupFilter(effectiveNumGroups); else hideGroupFilter();
         displayParticipants(getFilteredParticipants());
@@ -324,7 +300,6 @@
       }
       
     } catch (error) {
-      console.error('Error loading tournament data:', error);
       showEmpty();
     }
   }
@@ -350,19 +325,16 @@
         .order('match_number', { ascending: true });
 
       if (error) {
-        console.error('Error loading bracket:', error);
         return;
       }
 
       if (!data || data.length === 0) {
-        console.log('No bracket generated yet for this tournament');
         clearBracketSection();
         return;
       }
 
       displayBracketTree(data, tournament);
     } catch (error) {
-      console.error('Error loading bracket:', error);
       clearBracketSection();
     }
   }
@@ -914,7 +886,6 @@
           table: TABLES.PARTICIPANTS
         },
         (payload) => {
-          console.log('Realtime update received:', payload);
           
           // Reload tournament data
           loadTournamentData(currentTournament);
@@ -925,7 +896,6 @@
       )
       .subscribe();
     
-    console.log('✅ Real-time updates enabled');
   }
 
   // ============================================

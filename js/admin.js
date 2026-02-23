@@ -126,7 +126,6 @@
   
   async function loadAdminTournaments() {
     if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
-      console.warn('Supabase not configured');
       return;
     }
     
@@ -139,17 +138,13 @@
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error loading tournaments:', error);
         return;
       }
       
       adminTournaments = data || [];
-      console.log('📋 Loaded', adminTournaments.length, 'tournaments for admin');
       populateAdminTournamentFilters();
       
-    } catch (error) {
-      console.error('Error:', error);
-    }
+    } catch (error) {}
   }
   
   function populateAdminTournamentFilters() {
@@ -240,15 +235,12 @@
       for (const { id, group_number } of assignments) {
         const { error } = await supabase.from(TABLES.PARTICIPANTS).update({ group_number }).eq('id', id);
         if (error) {
-          console.error('Error updating participant group:', error);
           return null;
         }
       }
       const { error: tErr } = await supabase.from('tournaments').update({ number_of_groups: numGroups }).eq('id', tournamentId);
-      if (tErr) console.warn('Could not update tournament number_of_groups:', tErr);
       return assignments;
     } catch (e) {
-      console.error('runAutoSplitAndSave error:', e);
       return null;
     }
   }
@@ -283,7 +275,6 @@
       const { data: participants, error } = await query;
       
       if (error) {
-        console.error('Error loading participants:', error);
         return;
       }
       
@@ -310,7 +301,6 @@
         recalcBtn.style.display = t && t.max_participants_per_group != null ? '' : 'none';
       }
     } catch (error) {
-      console.error('Error:', error);
     }
   }
   
@@ -376,7 +366,6 @@
     const TABLES = window.supabaseConfig.TABLES;
     const { error } = await supabase.from(TABLES.PARTICIPANTS).update({ group_number: groupNumber }).eq('id', participantId);
     if (error) {
-      console.error('Error updating participant group:', error);
       alert('Failed to update group');
     } else {
       loadParticipants();
@@ -402,7 +391,6 @@
       .eq('id', participantId);
     
     if (error) {
-      console.error('Error deleting participant:', error);
       alert('Error deleting participant');
     } else {
       loadParticipants(); // Reload table
@@ -449,8 +437,6 @@
         recalcGroupsBtn.disabled = true;
         try {
           const { data, error } = await window.supabaseConfig.supabase.functions.invoke('auto-split-groups', { body: { tournament_id: tid } });
-          if (error) console.warn('Recalculate groups:', error);
-          if (data && (data.error || data.detail)) console.warn('Recalculate groups response:', data.error || '', data.detail || '');
           await loadParticipants();
         } finally {
           recalcGroupsBtn.disabled = false;
@@ -553,7 +539,6 @@
         .order('roblox_username', { ascending: true });
       
       if (error) {
-        console.error('Error loading participants:', error);
         return;
       }
       
@@ -565,7 +550,6 @@
       displayResultsForm(participants, round);
       
     } catch (error) {
-      console.error('Error:', error);
     }
   }
   
@@ -694,7 +678,6 @@
     }
     
     if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
-      console.log('DEMO MODE - Results:', results);
       document.getElementById('resultsSaved').classList.remove('hidden');
       setTimeout(() => {
         document.getElementById('resultsSaved').classList.add('hidden');
@@ -742,13 +725,11 @@
         document.getElementById('resultsSaved').classList.add('hidden');
       }, 5000);
       
-      console.log('✅ Results saved successfully:', match);
       
       // Reload existing results after saving
       await loadExistingResults();
       
     } catch (error) {
-      console.error('Error saving results:', error);
       alert('Error saving results: ' + error.message);
     }
   }
@@ -766,7 +747,6 @@
     const noResultsEl = document.getElementById('noExistingResults');
     const tableBody = document.getElementById('existingResultsBody');
 
-    console.log('🔍 Loading existing results for tournament:', tournament);
 
     if (!tournament) {
       existingResultsMatches = [];
@@ -800,14 +780,11 @@
       const { data: participants, error: participantsErr } = participantsRes;
 
       if (error) {
-        console.error('❌ Error loading existing results:', error);
         alert('Error loading results: ' + error.message);
         return;
       }
       existingResultsParticipantsAll = participants || [];
-      if (participantsErr) console.warn('Could not load participants for edit view:', participantsErr);
 
-      console.log('📊 Found matches:', matches ? matches.length : 0, 'participants:', existingResultsParticipantsAll.length);
 
       if (!matches || matches.length === 0) {
         existingResultsMatches = [];
@@ -842,7 +819,6 @@
 
       displayExistingResults(matchesToUse);
     } catch (error) {
-      console.error('Error loading existing results:', error);
     }
   }
   
@@ -1012,7 +988,6 @@
       }
       await loadExistingResults();
     } catch (error) {
-      console.error('Error adding result:', error);
       alert('Error adding result: ' + error.message);
     }
   };
@@ -1069,7 +1044,6 @@
       await loadExistingResults();
       
     } catch (error) {
-      console.error('Error updating result:', error);
       alert('Error updating result: ' + error.message);
     }
   };
@@ -1122,7 +1096,6 @@
       await loadExistingResults();
       
     } catch (error) {
-      console.error('Error deleting result:', error);
       alert('Error deleting result: ' + error.message);
     }
   };
@@ -1203,13 +1176,11 @@
   let editingTournamentId = null;
   
   function setupTournamentManagement() {
-    console.log('🔧 Setting up tournament management...');
     const createBtn = document.getElementById('createTournamentBtn');
     const closeBtn = document.getElementById('closeTournamentModal');
     const cancelBtn = document.getElementById('cancelTournamentBtn');
     const form = document.getElementById('tournamentForm');
     
-    console.log('📝 Form element found:', form ? 'YES' : 'NO');
     
     if (createBtn) {
       createBtn.addEventListener('click', showCreateTournamentForm);
@@ -1224,10 +1195,8 @@
     }
     
     if (form) {
-      console.log('✅ Attaching submit handler to form');
       form.addEventListener('submit', handleTournamentSubmit);
     } else {
-      console.error('❌ Tournament form not found!');
     }
     
     // Load tournaments when tab is active
@@ -1236,7 +1205,6 @@
   
   async function loadTournaments() {
     if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
-      console.warn('Supabase not configured');
       return;
     }
     
@@ -1249,14 +1217,12 @@
         .order('display_order', { ascending: true });
       
       if (error) {
-        console.error('Error loading tournaments:', error);
         return;
       }
       
       currentTournaments = tournaments || [];
       displayTournamentsTable(currentTournaments);
     } catch (error) {
-      console.error('Error:', error);
     }
   }
   
@@ -1368,7 +1334,6 @@
   }
   
   async function handleTournamentSubmit(event) {
-    console.log('🚀 TOURNAMENT SUBMIT TRIGGERED!');
     event.preventDefault();
     
     if (!window.supabaseConfig || !window.supabaseConfig.isSupabaseConfigured()) {
@@ -1390,7 +1355,6 @@
         .substring(0, 20);
       const timestamp = Date.now();
       tournamentType = `${nameSlug}-${timestamp}`;
-      console.log('🔧 Auto-generated tournament_type:', tournamentType);
     }
     
     const tournamentData = {
@@ -1414,15 +1378,12 @@
       updated_at: new Date().toISOString()
     };
     
-    console.log('💾 Saving tournament with data:', tournamentData);
-    console.log('📋 Bracket Style being saved:', tournamentData.bracket_style);
     
     try {
       let result;
       
       if (tournamentId) {
         // Update existing tournament
-        console.log('🔄 Updating tournament ID:', tournamentId);
         result = await supabase
           .from('tournaments')
           .update(tournamentData)
@@ -1430,31 +1391,25 @@
           .select(); // Add .select() to return updated data
       } else {
         // Create new tournament
-        console.log('✨ Creating new tournament');
         result = await supabase
           .from('tournaments')
           .insert(tournamentData)
           .select(); // Add .select() to return created data
       }
       
-      console.log('📊 Database response:', result);
       
       if (result.error) {
-        console.error('❌ Error saving tournament:', result.error);
         alert('Error saving tournament: ' + result.error.message);
         return;
       }
       
       if (result.data && result.data.length > 0) {
-        console.log('✅ Tournament saved successfully:', result.data[0]);
-        console.log('✅ Bracket style in database:', result.data[0].bracket_style);
       }
       
       alert(tournamentId ? 'Tournament updated successfully!' : 'Tournament created successfully!');
       closeTournamentModal();
       loadTournaments();
     } catch (error) {
-      console.error('❌ Error:', error);
       alert('Error saving tournament: ' + error.message);
     }
   }
@@ -1477,7 +1432,6 @@
         .eq('id', tournamentId);
       
       if (error) {
-        console.error('Error deleting tournament:', error);
         alert('Error deleting tournament');
         return;
       }
@@ -1485,7 +1439,6 @@
       alert('Tournament deleted successfully!');
       loadTournaments();
     } catch (error) {
-      console.error('Error:', error);
       alert('Error deleting tournament');
     }
   };
