@@ -27,7 +27,8 @@ if (typeof supabaseClient === 'undefined' || supabaseClient === null) {
 const TABLES = {
   PARTICIPANTS: 'participants',
   MATCHES: 'matches',
-  TOURNAMENT_SETTINGS: 'tournament_settings'
+  TOURNAMENT_SETTINGS: 'tournament_settings',
+  EMAIL_SUBMISSIONS: 'email_submissions'
 };
 
 // Tournament types

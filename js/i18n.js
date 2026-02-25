@@ -164,6 +164,10 @@ const translations = {
       usernamePlaceholder: "Entrez votre nom d'utilisateur",
       usernameHelp: "Assurez-vous que votre nom d'utilisateur est exact",
       
+      emailLabel: "Courriel (optionnel)",
+      emailPlaceholder: "votre@courriel.com",
+      emailHelp: "Pour les mises à jour du tournoi. Non affiché publiquement.",
+      
       tournamentLabel: "Sélectionnez un tournoi",
       tournament1Option: "RIVALS (13-18 ans)",
       tournament2Option: "Ultimate Driving (Tous âges)",
@@ -201,7 +205,7 @@ const translations = {
       
       // Privacy Notice
       privacyTitle: "Confidentialité",
-      privacyText: "Nous ne collectons que votre nom d'utilisateur (information publique). Aucune donnée personnelle n'est requise."
+      privacyText: "Nous ne collectons que votre nom d'utilisateur (information publique). Le courriel est optionnel et stocké de façon privée, inaccessible au site."
     },
 
     // Bracket/Live View
@@ -536,6 +540,10 @@ const translations = {
       usernamePlaceholder: "Enter your username",
       usernameHelp: "Make sure your username is correct",
       
+      emailLabel: "Email (optional)",
+      emailPlaceholder: "your@email.com",
+      emailHelp: "For tournament updates. Not displayed publicly.",
+      
       tournamentLabel: "Select a tournament",
       tournament1Option: "RIVALS (Ages 13-18)",
       tournament2Option: "Ultimate Driving (All Ages)",
@@ -573,7 +581,7 @@ const translations = {
       
       // Privacy Notice
       privacyTitle: "Privacy",
-      privacyText: "We only collect your username (public information). No personal data is required."
+      privacyText: "We only collect your username (public information). Email is optional and stored privately, inaccessible to the website."
     },
 
     // Bracket/Live View

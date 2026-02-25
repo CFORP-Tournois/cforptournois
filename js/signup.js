@@ -184,8 +184,10 @@
     
     // Get form data
     const tournamentRadio = document.querySelector('input[name="tournament"]:checked');
+    const emailInput = document.getElementById('email');
     const formData = {
       robloxUsername: document.getElementById('robloxUsername').value.trim(),
+      email: emailInput ? emailInput.value.trim() : '',
       tournament: tournamentRadio?.value,
       tournamentId: tournamentRadio?.dataset.tournamentId, // Get the UUID
       gamePlatform: (tournamentRadio?.dataset?.gamePlatform || '').toLowerCase(),
@@ -362,6 +364,16 @@
     
     if (error) {
       throw new Error('Registration error: ' + error.message);
+    }
+
+    // Save email to private table (anon can INSERT only, never SELECT – emails are inaccessible to website)
+    const email = (formData.email || '').trim();
+    if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && TABLES.EMAIL_SUBMISSIONS) {
+      supabase.from(TABLES.EMAIL_SUBMISSIONS).insert({
+        email: email,
+        participant_id: data.id,
+        tournament_id: formData.tournamentId || null
+      }).then(() => {}).catch(() => {}); // Fire-and-forget; don't block success page
     }
 
     // Auto-split groups (server-side so updates succeed; client-side updates may be blocked by RLS)

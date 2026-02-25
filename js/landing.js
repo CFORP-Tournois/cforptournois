@@ -104,7 +104,7 @@
       <article class="tournament-card">
         ${isRivals ? `
         <div style="text-align: center; margin-bottom: 0.5rem;">
-          <img src="assets/images/Rivals/Rivals-Logo.png" alt="RIVALS" style="max-height: 56px; width: auto; display: block; margin: 0 auto;">
+          <img src="assets/images/Rivals/Rivals-Logo.png" alt="RIVALS" style="max-height: 96px; width: auto; display: block; margin: 0 auto;">
         </div>
         ` : `<h3 class="tournament-card-title">${escapeHtml(name)}</h3>`}
         ${subtitle ? `<p class="tournament-card-subtitle">${escapeHtml(subtitle)}</p>` : ''}

@@ -91,6 +91,23 @@
             <div id="usernameSuccess" class="form-success hidden"></div>
           </div>
 
+          <!-- Email (optional, stored privately – not readable by website) -->
+          <div class="form-group">
+            <label for="email" class="form-label" data-i18n="signup.emailLabel">
+              Courriel (optionnel)
+            </label>
+            <input 
+              type="email" 
+              id="email" 
+              name="email" 
+              class="form-input"
+              data-i18n-placeholder="signup.emailPlaceholder"
+              placeholder="votre@courriel.com"
+              autocomplete="email"
+            >
+            <p class="form-help" data-i18n="signup.emailHelp">Pour les mises à jour du tournoi. Non affiché publiquement.</p>
+          </div>
+
           <!-- Honeypot field (hidden from humans, visible to bots) -->
           <div class="form-group" style="position: absolute; left: -9999px; opacity: 0; pointer-events: none;" aria-hidden="true">
             <label for="website">Website (leave blank)</label>
