@@ -176,6 +176,7 @@ const translations = {
       emailLabel: "Courriel (optionnel)",
       emailPlaceholder: "votre@courriel.com",
       emailHelp: "Pour les mises à jour du tournoi. Non affiché publiquement.",
+      emailNoEmailNote: "Si vous ne souhaitez pas nous donner votre courriel, veuillez enregistrer ce site pour pouvoir accéder aux liens de participation le jour du tournoi.",
       
       tournamentLabel: "Sélectionnez un tournoi",
       tournament1Option: "RIVALS (13-18 ans)",
@@ -565,6 +566,7 @@ const translations = {
       emailLabel: "Email (optional)",
       emailPlaceholder: "your@email.com",
       emailHelp: "For tournament updates. Not displayed publicly.",
+      emailNoEmailNote: "If you do not wish to give us your email address, please save this website so you can get the join links on tournament day.",
       
       tournamentLabel: "Select a tournament",
       tournament1Option: "RIVALS (Ages 13-18)",
