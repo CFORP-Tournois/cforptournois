@@ -439,6 +439,10 @@
         }
       }
     }
+    const step1Link = document.getElementById('step1MoreInfoLink');
+    if (step1Link && data.tournament) {
+      step1Link.href = 'tournament-info.html?tournament=' + encodeURIComponent(data.tournament);
+    }
     if (window.i18n && window.i18n.updateAllText) window.i18n.updateAllText();
     
     // Show Roblox download link when tournament platform is Roblox (empty defaults to Roblox)
